@@ -28,7 +28,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   n <- length(log.exp)
 
 
-  ## Labels or names of the equations:
+  # Labels or names of the equations:
   noms <- c()
   for (i in 1:neq) noms <- c(noms, paste("eq", i, sep = ""))
 
@@ -47,12 +47,13 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   for (i in 1:(neq + 1)) w[, i] <- shares[, i]
 
 
-  ## Recovery of coefficients for the variables p and p * z Note: the first element
-  ## of Z is a constant to capture the direct price effects
+  # Recovery of coefficients for the variables p and p * z
+  # Note: the first element of Z is a constant to capture the direct price
+  # effects
 
   my.array <- array(0, dim = c(nsoc + 1, (neq + 1), (neq + 1)))
 
-  ## Step 1: Recovery of coefficients of p variables
+  # Step 1: Recovery of coefficients of p variables
   a0 <- matrix(0, neq, neq)
   for (i in 1:neq) {
     for (j in 1:neq) {
@@ -69,7 +70,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
 
 
 
-  ## Step 2: Recovery of coefficients of p*z variables only if required
+  # Step 2: Recovery of coefficients of p*z variables only if required
   if (pz.inter) {
     for (i in 1:neq) {
       for (j in interpz) {
@@ -103,8 +104,9 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     }
   }
 
-  ## construction of the sum 'sum_j sum_k sum_t a_jkt z_t p_j p_k' (calculation of
-  ## y) 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
+  # construction of the sum 'sum_j sum_k sum_t a_jkt z_t p_j p_k'
+  # (calculation of y)
+  # 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
   a <- my.array
   tot = 0
   for (j in 1:neq) {
@@ -116,7 +118,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     }
   }
 
-  ## Recovery of coefficients of p*y variables only if required
+  # Recovery of coefficients of p*y variables only if required
   bjk = matrix(0, neq + 1, neq + 1)
   tot2 = 0
   if (py.inter) {
@@ -138,8 +140,8 @@ intermediate.blocs <- function(object = object, log.price = log.price,
 
     colnames(bjk) <- c(noms, "Others")
 
-    ## construction of the sum 'sum_j sum_k b_jk p_j p_k' (calculation of y) 'EASI
-    ## made EASIER' (PENDAKUR 2008 - page 11 formula 22)
+    # construction of the sum 'sum_j sum_k b_jk p_j p_k' (calculation of y)
+    # 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
     for (j in 1:neq) {
       for (k in 1:neq) {
         tempo <- bjk[j, k] * P[, j] * P[, k]
@@ -148,20 +150,20 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     }
   }
 
-  ## construction of the sum 'sum_j w_j p_j' (calculation of y) 'EASI made EASIER'
-  ## (PENDAKUR 2008 - page 11 formula 22)
+  # construction of the sum 'sum_j w_j p_j' (calculation of y)
+  # 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
   tot0 = 0
   for (j in 1:neq) {
     tempo <- w[, j] * P[, j]
     tot0 <- tot0 + tempo
   }
 
-  ## Calculation of y 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
+  # Calculation of y 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
   if (interact) {
     y <- (lnx - tot0 + 1/2 * tot)/(1 - 1/2 * tot2)
   } else y <- (lnx - tot0 + 1/2 * tot)
 
-  ## Recovery of coefficients of y^r variables (calculation of w_j)
+  # Recovery of coefficients of y^r variables (calculation of w_j)
   bjr = matrix(0, y.power, neq + 1)
   for (i in 1:neq) {
     for (j in 1:y.power) {
@@ -176,7 +178,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
 
   colnames(bjr) <- c(noms, "others")
 
-  ## Recovery of coefficients of z variables (calculation of w_j)
+  # Recovery of coefficients of z variables (calculation of w_j)
   gjt = matrix(0, nsoc, neq + 1)
   for (i in 1:neq) {
     for (j in 1:nsoc) {
@@ -191,7 +193,8 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   colnames(gjt) <- c(noms, "others")
 
 
-  ## Recovery of coefficients of y*z variables (calculation of w_j) only if required
+  # Recovery of coefficients of y*z variables (calculation of w_j) only if
+  # required
   hjt = matrix(0, nsoc, neq + 1)
   if (zy.inter) {
     for (i in 1:neq) {
@@ -207,9 +210,11 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   }
   colnames(hjt) <- c(noms, "others")
 
-  ## Recovery of the constants (calculation of w_j)
+  # Recovery of the constants (calculation of w_j)
   cc = c()
-  for (i in 1:neq) cc = cbind(cc, coef[paste("eq", i, "_(Intercept)", sep = "")])
+  for (i in 1:neq) {
+    cc = cbind(cc, coef[paste("eq", i, "_(Intercept)", sep = "")])
+  }
 
   cc = cbind(cc, 1 - sum(cc))
 

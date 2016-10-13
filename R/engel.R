@@ -47,7 +47,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   lnx <- temp$log.exp
   y <- temp$y
 
-  ## Calculation of w_j
+  # Calculation of w_j
   W = matrix(0, n, neq)
 
   ajk <- my.array
@@ -91,8 +91,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   }
   colnames(W) <- labels.share[1:neq]
 
-  ## Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
-  ## - (delta method)
+  # Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
+  # - (delta method)
   if (WDELTA) {
     nb <- object$dim_varlist
     MAT <- rep(1, n)
@@ -136,10 +136,10 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     }
   }
 
-  ## Labels of W matrix
+  # Labels of W matrix
   colnames(W) = noms
 
-  ## Engel Curves
+  # Engel Curves
   quant = quantile(lnx, seq(0, 1, 0.01))
 
   ee = rep(1, n)
@@ -161,7 +161,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   Wm_autres = 1 - apply(Wm, 1, sum)
   Wm = cbind(Wm, Wm_autres)
 
-  ## Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
+  # Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
   if (WDELTA) {
     Wme = matrix(0, 100, neq + 1)
     for (i in 1:100) {
@@ -182,7 +182,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   }
 
   if (!identical(file, FALSE)) {
-    ### management of labels.share
+    # management of labels.share
     if (length(labels.share) < 2)
       labels.share <- noms
 
@@ -197,8 +197,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
     ss <- seq(1, neq * 2, by = 2)
 
-    ## Export of Engel curves in the parent folder under the name 'file'. pdf File
-    ## name is entered on the command line
+    # Export of Engel curves in the parent folder under the name 'file'. pdf File
+    # name is entered on the command line
 
     pdf(paste("./", file, ".pdf", sep = ""))
 
@@ -234,7 +234,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     dev.off()
   }
 
-  ## refreshment
+  # refreshment
   if (WDELTA) {
     rm(MAT)
     rm(W_ecart)

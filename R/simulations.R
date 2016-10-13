@@ -1,5 +1,5 @@
-simulations <- function(object = object, log.price_new = log.price_new, var.soc_new = var.soc_new,
-  log.exp_new = log.exp_new) {
+simulations <- function(object = object, log.price_new = log.price_new,
+  var.soc_new = var.soc_new, log.exp_new = log.exp_new) {
 
   fit3sls <- object$fit3sls
   varlist <- object$varlist
@@ -46,7 +46,7 @@ simulations <- function(object = object, log.price_new = log.price_new, var.soc_
 
 
 
-  ## Calculation of w_j
+  # Calculation of w_j
   W = matrix(0, n, neq)
 
   ajk <- my.array

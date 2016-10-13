@@ -46,7 +46,7 @@ concavity <- function(object = object) {
   coef = Estimates[, 1]
   n <- length(log.exp)
 
-  ## Labels or names of the equations:
+  # Labels or names of the equations:
   noms <- c()
   for (i in 1:neq) noms <- c(noms, paste("eq", i, sep = ""))
 
@@ -63,8 +63,8 @@ concavity <- function(object = object) {
   w = matrix(0, n, neq + 1)
   for (i in 1:(neq + 1)) w[, i] <- shares[, i]
 
-  ## Calculation of first and second derivative of y with respect to p_j and p_k
-  ## uprime
+  # Calculation of first and second derivative of y with respect to p_j and p_k
+  # uprime
   h1 <- my.array
   toth1 <- matrix(0, n, neq)
   u1p <- matrix(0, n, neq)
@@ -79,7 +79,7 @@ concavity <- function(object = object) {
     u1p[, j] = -w[, j]/exp(P[, j]) + toth1[, j]
   }
 
-  ## usecond
+  # usecond
   toth2 <- array(0, c(neq, neq, n))
   u2p <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
@@ -93,7 +93,7 @@ concavity <- function(object = object) {
   }
   u2p = toth2
 
-  ## vprime
+  # vprime
   toth3 <- matrix(0, n, neq)
   v1p <- matrix(0, n, neq)
   for (k in 1:neq) {
@@ -105,7 +105,7 @@ concavity <- function(object = object) {
   }
 
 
-  ## vsecond
+  # vsecond
   toth4 <- array(0, c(neq, neq, n))
   v2p <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
@@ -137,8 +137,7 @@ concavity <- function(object = object) {
   Hy1 <- wp/l
   Hy2 <- (wp * l - lp * w)/(l)^2
 
-  ## Calculation of of first and second derivative of S0 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S0 with respect to p_j and p_k:
   S0 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -160,8 +159,7 @@ concavity <- function(object = object) {
     }
   }
 
-  ## Calculation of of first and second derivative of S1 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S1 with respect to p_j and p_k:
   S1 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -183,8 +181,7 @@ concavity <- function(object = object) {
     }
   }
 
-  ## Calculation of of first and second derivative of S2 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S2 with respect to p_j and p_k:
   S2 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -206,16 +203,16 @@ concavity <- function(object = object) {
     }
   }
 
-  ## First derivate of S in respect with p_j
+  # First derivate of S in respect with p_j
   SSp <- Hy1 + S01p + S11p + S21p * y + S2 * Hy1
 
-  ## Second derivate of S
+  # Second derivate of S
   SS2p <- Hy2 + S02p + S12p + S22p * y + S21p * Hy1 + S21p * Hy1 + S2 * Hy2
 
   w <- shares
 
-  ## Calculation of first and second derivative of y with respect to p_j and p_k
-  ## uprime
+  # Calculation of first and second derivative of y with respect to p_j and p_k
+  # uprime
   h1 <- my.array
   toth1 <- matrix(0, n, neq)
   u1p <- matrix(0, n, neq)
@@ -230,7 +227,7 @@ concavity <- function(object = object) {
     u1p[, k] = -w[, k]/exp(P[, k]) + toth1[, k]
   }
 
-  ## usecond
+  # usecond
   toth2 <- array(0, c(neq, neq, n))
   u2p <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
@@ -244,7 +241,7 @@ concavity <- function(object = object) {
   }
   u2p = toth2
 
-  ## vprime
+  # vprime
   toth3 <- matrix(0, n, neq)
   v1p <- matrix(0, n, neq)
   for (j in 1:neq) {
@@ -255,7 +252,7 @@ concavity <- function(object = object) {
     v1p[, k] = -toth3[, k]
   }
 
-  ## vsecond
+  # vsecond
   toth4 <- array(0, c(neq, neq, n))
   v2p <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
@@ -283,8 +280,7 @@ concavity <- function(object = object) {
 
   Hy1 <- wp/l
 
-  ## Calculation of of first and second derivative of S0 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S0 with respect to p_j and p_k:
   S0 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -299,8 +295,7 @@ concavity <- function(object = object) {
     }
   }
 
-  ## Calculation of of first and second derivative of S1 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S1 with respect to p_j and p_k:
   S1 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -315,8 +310,7 @@ concavity <- function(object = object) {
     }
   }
 
-  ## Calculation of of first and second derivative of S2 with respect to p_j and p_k
-  ## :
+  # Calculation of first & second derivative of S2 with respect to p_j and p_k:
   S2 <- array(0, c(neq, neq, n))
   for (j in 1:neq) {
     for (k in 1:neq) {
@@ -331,7 +325,7 @@ concavity <- function(object = object) {
     }
   }
 
-  ## First derivate of S in respect with p_k
+  # First derivate of S in respect with p_k
   SSpp <- Hy1 + S01p + S11p + S21p * y + S2 * Hy1
 
 

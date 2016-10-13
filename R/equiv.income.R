@@ -2,7 +2,7 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
   log.exp_cur = log.exp_cur, log.price_ref = log.price_ref,
   log.price_cur = log.price_cur) {
 
-  ## recovery of results of previous estimation
+  # recovery of results of previous estimation
   fit3sls <- object$fit3sls
   varlist <- object$varlist
   neq <- object$neq
@@ -15,7 +15,7 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
   interpz <- object$interpz
 
 
-  ## Definition of ...
+  # Definition of ...
   var.soc <- object$var.soc
   shares <- object$shares
   n <- length(log.exp_cur)
@@ -47,8 +47,8 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
   cat("\n", "Info_1: The average Equivalent income is equal to :", mean(equiv_income),
     "\n")
 
-  ## Validation 0: implicit utility with reference income in the reference situation
-  ## (start situation)
+  # Validation 0: implicit utility with reference income in the reference situation
+  # (start situation)
   if (interact) {
     y <- (log.exp_ref - tot0 + 1/2 * tot)/(1 - 1/2 * tot2)
   } else y <- (log.exp_ref - tot0 + 1/2 * tot)
@@ -57,12 +57,12 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
   cat("\n", "           the reference situation is equal to :", mean(y), "\n")
   cat("\n", "*** it is the implicit utility before any changes ***", "\n")
 
-  ## Current Implicit utility
+  # Current Implicit utility
   cat("\n", "Info_3: The Current Implicit Utility is equal to:", mean(A), "\n")
 
-  ## Validation 1: implicit utility with income equivalent in the reference
-  ## situation = implicit utility with contemporary income in the contemporary
-  ## situation
+  # Validation 1: implicit utility with income equivalent in the reference
+  # situation = implicit utility with contemporary income in the contemporary
+  # situation
   if (interact) {
     y <- (log(equiv_income) - tot0 + 1/2 * tot)/(1 - 1/2 * tot2)
   } else y <- (log(equiv_income) - tot0 + 1/2 * tot)
@@ -73,9 +73,9 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
     "\n")
 
 
-  ## Validation 2: implicit utility with contemporary income in the reference
-  ## situation < or > implicit utility with contemporary income in the contemporary
-  ## situation
+  # Validation 2: implicit utility with contemporary income in the reference
+  # situation < or > implicit utility with contemporary income in the contemporary
+  # situation
 
   if (interact) {
     y2 <- (log.exp_cur - tot0 + 1/2 * tot)/(1 - 1/2 * tot2)

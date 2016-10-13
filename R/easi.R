@@ -2,8 +2,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
   py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = FALSE) {
 
-  ## y.power = hightest power of y nsoc = mumber of demographics variables neq =
-  ## number of equations (without the last item)
+  # y.power = hightest power of y nsoc = mumber of demographics variables neq =
+  # number of equations (without the last item)
   if (!y.power) {
     ny <- 3
   } else ny <- y.power
@@ -13,21 +13,21 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   # Number of observations
   n <- length(log.exp)
 
-  ## Matrix of socio-demographic variables
+  # Matrix of socio-demographic variables
   z <- matrix(0, n, nsoc)
   for (i in 1:nsoc) z[, i] <- var.soc[, i]
   LABELS.Z <- c()
   for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste("z", i, sep = ""))
   colnames(z) <- LABELS.Z
 
-  ## Labels or names of the budget shares: s1 - sneq
+  # Labels or names of the budget shares: s1 - sneq
   LABELS.W <- c()
   for (i in 1:(neq + 1)) LABELS.W <- c(LABELS.W, paste("s", i, sep = ""))
 
   LABELS.P <- c()
   for (i in 1:(neq + 1)) LABELS.P <- c(LABELS.P, paste("p", i, sep = ""))
 
-  ## Matrix of budget shares, 's', and the matrix of log.prices, 'p'
+  # Matrix of budget shares, 's', and the matrix of log.prices, 'p'
   s <- matrix(0, n, neq + 1)
   p <- matrix(0, n, neq + 1)
   for (i in 1:(neq + 1)) {
@@ -37,28 +37,28 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   colnames(s) <- LABELS.W
   colnames(p) <- LABELS.P
 
-  ## labels.share
+  # labels.share
   if (length(labels.share) == 1) {
     labels.share <- LABELS.W
   }
 
-  ## labels.price
+  # labels.price
   labels.price <- rep(0, neq + 1)
   for (i in 1:(neq + 1)) {
     labels.price[i] <- paste("p", labels.share[i], sep = "")
   }
 
-  ## labels.soc
+  # labels.soc
   if (length(labels.soc) == 1) {
     labels.soc <- LABELS.Z
   }
 
-  ## interpz
+  # interpz
   interpz <- ifelse((length(interpz) > 1), interpz, c(1:nsoc))
 
-  # Convergence criteria for iterated method. If model includes ## interactive
-  # terms, we also define the the convergence variable ## (implicit utility or
-  # parameter) ##
+  # Convergence criteria for iterated method. If model includes interactive
+  # terms, we also define the the convergence variable (implicit utility or
+  # parameter)
   interact <- ((zy.inter) || (py.inter) || (pz.inter))
   if (interact) {
     conv_param <- 1
@@ -66,7 +66,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     conv_crit <- 1e-06
   } else conv_crit <- 1e-06
 
-  ## Price normalisation: 'np[,i]-np[,neq]'
+  # Price normalisation: 'np[,i]-np[,neq]'
   np <- matrix(0, n, neq)
   for (i in 1:neq) np[, i] <- p[, i] - p[, neq + 1]
 
@@ -76,32 +76,33 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   }
   colnames(np) <- LABELS.np
 
-  ## Backup of price matrix 'np_backup' for future reference
+  # Backup of price matrix 'np_backup' for future reference
   np_backup <- matrix(0, n, neq)
   for (i in 1:neq) np_backup[, i] <- np[, i]
   tempo <- c()
   for (i in 1:neq) tempo <- c(tempo, paste("np", i, "_backup", sep = ""))
   colnames(np_backup) <- tempo
 
-  ## Initialization of matrix Ap to 0
+  # Initialization of matrix Ap to 0
   Ap <- matrix(0, 1, neq + 1)
   for (i in 1:(neq + 1)) Ap[i] <- 0
 
-  ## Initialization of matrix Bp and vector pBp to 0
+  # Initialization of matrix Bp and vector pBp to 0
   if (interact) {
     Bp <- matrix(0, 1, neq + 1)
     for (i in 1:(neq + 1)) Bp[i] <- 0
     pBp <- 0
   }
 
-  ## Initialization of matrix pAp to 0
+  # Initialization of matrix pAp to 0
   pAp <- 0
 
 
-  # Creation of interaction variables 'np[,i]*z[,j]' ## Not all variables need to
-  # be interacted.  Those we wish to ## interact with prices will be specified by
-  # interpz=c().  ## For example, writing interpz=c(1,2) means that we wish to
-  # interact ## the first two demographic variables with the prices.  ##
+  # Creation of interaction variables 'np[,i]*z[,j]'
+  # Not all variables need to be interacted. Those we wish to interact with
+  # prices will be specified by interpz=c(). For example, writing
+  # interpz=c(1,2) means that we wish to interact the first two demographic
+  # variables with the prices.
 
   if (pz.inter) {
     npz <- matrix(0, n, neq * length(interpz))
@@ -112,7 +113,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
       }
     }
 
-    ## Creation of the names of the interaction variables 'np[,i]*z[,j]'
+    # Creation of the names of the interaction variables 'np[,i]*z[,j]'
     tempo <- c()
     for (i in 1:neq) {
       for (j in interpz) {
@@ -133,7 +134,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   } else npz <- LABELS.npz <- LABELS.npz2 <- c()
 
 
-  ## Computation of y_stone=x-p'w, and of the instrument, y_tilda=x-p'w^bar
+  # Computation of y_stone=x-p'w, and of the instrument, y_tilda=x-p'w^bar
   y_stone <- log.exp
   y_tilda <- log.exp
 
@@ -145,7 +146,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     y_stone <- y_stone - s[, i] * p[, i]
   }
 
-  ## Creation of y^i et y_inst^i
+  # Creation of y^i et y_inst^i
   y <- y_stone
   y_inst <- y_tilda
 
@@ -166,7 +167,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   colnames(YY) <- LABELS.YY
   colnames(Yinst) <- LABELS.Yinst
 
-  ## Creation of y*z and z*y_inst only if required.
+  # Creation of y*z and z*y_inst only if required.
   if (zy.inter) {
     yz <- matrix(0, n, nsoc)
     yzinst <- matrix(0, n, nsoc)
@@ -186,7 +187,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     colnames(yzinst) <- tempo2
   } else yz <- yzinst <- c()
 
-  ## Creation of y*p and y_inst*p only if required
+  # Creation of y*p and y_inst*p only if required
   if (py.inter) {
     ynp <- matrix(0, n, neq)
     for (i in 1:neq) ynp[, i] <- y * np[, i]
@@ -228,10 +229,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
 
   varlist <- form10
 
-  ## Number of variables per equation
+  # Number of variables per equation
   dim_varlist <- length(varlist)
 
-  ## Constraints of symmetry on price coefficients
+  # Constraints of symmetry on price coefficients
   TT <- matrix(0, 2, neq * (neq - 1)/2)
   k <- 0
   for (i in 1:(neq - 1)) {
@@ -244,7 +245,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   TT <- t(TT)
   TT <- TT[, 1]
 
-  ## Constraints of symmetry on y*p coefficients only if required
+  # Constraints of symmetry on y*p coefficients only if required
   if (py.inter) {
     TT2 <- matrix(0, 2, neq * (neq - 1)/2)
     k <- 0
@@ -259,7 +260,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     TT2 <- TT2[, 1]
   } else TT2 <- c()
 
-  ## Constraints of symmetry on p*z coefficients only if required
+  # Constraints of symmetry on p*z coefficients only if required
   if (pz.inter) {
     TT3 <- matrix(0, 2, neq * (length(interpz) * (neq - 1))/2)
     k <- 0
@@ -278,10 +279,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     TT3 <- TT3[, 1]
   } else TT3 <- c()
 
-  ## full list of constraints
+  # full list of constraints
   Rmat <- c(TT, TT2, TT3)
 
-  ## Creation of system of equations
+  # Creation of system of equations
   form1 <- c()
   for (i in 1:ny) form1 <- paste(form1, "+", colnames(YY)[i])
   form2 <- form1
@@ -298,17 +299,19 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   }
   form6 <- form5
   if (pz.inter) {
-    for (i in 1:(neq * length(interpz))) form6 <- paste(form6, "+", LABELS.npz2[i])
+    for (i in 1:(neq * length(interpz))) {
+      form6 <- paste(form6, "+", LABELS.npz2[i])
+    }
   }
 
 
   system <- list()
   for (i in 1:neq) {
-    system <- c(system, list(formula(paste(paste("eqS", i, sep = ""), "<-", paste("s",
-      i, sep = ""), "~", form6))))
+    system <- c(system, list(formula(paste(paste("eqS", i, sep = ""), "<-",
+      paste("s", i, sep = ""), "~", form6))))
   }
 
-  ## Creation of the list of instruments for the 3SLS estimation
+  # Creation of the list of instruments for the 3SLS estimation
   tempo <- c()
   for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
   colnames(z) <- tempo
@@ -318,7 +321,9 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   for (i in 1:neq) form22 <- paste(form22, "+", colnames(np)[i])
   form33 <- form22
   if (pz.inter) {
-    for (i in 1:(neq * length(interpz))) form33 <- paste(form33, "+", LABELS.npz2[i])
+    for (i in 1:(neq * length(interpz))) {
+      form33 <- paste(form33, "+", LABELS.npz2[i])
+    }
   }
   form44 <- form33
   for (i in 1:ny) form44 <- paste(form44, "+", colnames(Yinst)[i])
@@ -335,11 +340,11 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   zlist <- paste("~", zlist)
 
 
-  ## Creation of the internal database to estimate the complete system
-  new.data <- new.data_dep <- data.frame(cbind(s, YY, z, yz, np, ynp, npz, Yinst,
-    yzinst, ynpinst, np_backup))
+  # Creation of the internal database to estimate the complete system
+  new.data <- new.data_dep <- data.frame(cbind(s, YY, z, yz, np, ynp, npz,
+    Yinst, yzinst, ynpinst, np_backup))
 
-  ## Initialization of vectors and criteria before creating the instruments
+  # Initialization of vectors and criteria before creating the instruments
   y <- y_stone
   y_backup <- y_stone
   y_old <- y_stone
@@ -348,7 +353,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   iter <- 0
   conv_y <- 1
 
-  ## Creation of instruments (iterative linear 3sls)
+  # Creation of instruments (iterative linear 3sls)
   cat("\n", "*** Please wait during the creation of final instruments... *** ",
     "\n")
   while (crit_test > conv_crit) {
@@ -429,8 +434,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     for (i in 1:neq) shat_y1_p0[, i] <- pred[, i]
 
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
-    for (i in 1:neq) new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-      i, "_backup", sep = "")]
+    for (i in 1:neq) {
+      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
+       i, "_backup", sep = "")]
+    }
 
     if (pz.inter) {
       for (i in 1:neq) {
@@ -441,7 +448,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
       }
     }
 
-    # ******** y variables and its interactions are set to 0 ********* y^i=y*p=y*z=0
+    # ******** y variables and its interactions are set to 0 *********
+    # y^i=y*p=y*z=0
     # ****
     if (interact) {
       for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- 0
@@ -479,8 +487,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     }
 
     # *********** p variables are restored : p=p_backup
-    for (i in 1:neq) new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-      i, "_backup", sep = "")]
+    for (i in 1:neq) {
+      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
+        i, "_backup", sep = "")]
+    }
 
     # ********** Ap, pAp, Bp, pBp ******
     if (!interact) {
@@ -585,7 +595,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
 
   }
 
-  ## Final estimate with previous instruments
+  # Final estimate with previous instruments
   new.data <- new.data_dep
 
   # *** Initialization of vectors, parameters and criteria *****
@@ -675,8 +685,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     for (i in 1:neq) shat_y1_p0[, i] <- pred[, i]
 
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
-    for (i in 1:neq) new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-      i, "_backup", sep = "")]
+    for (i in 1:neq) {
+      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
+        i, "_backup", sep = "")]
+    }
 
     if (pz.inter) {
       for (i in 1:neq) {
@@ -687,7 +699,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
       }
     }
 
-    # ******** y variables and its interactions are set to 0 ********* y^i=y*p=y*z=0
+    # ******** y variables and its interactions are set to 0 *********
+    # y^i=y*p=y*z=0
     # ****
     if (interact) {
       for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- 0
@@ -724,8 +737,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     }
 
     # *********** p variables are restored : p=p_backup
-    for (i in 1:neq) new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-      i, "_backup", sep = "")]
+    for (i in 1:neq) {
+      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
+        i, "_backup", sep = "")]
+    }
 
     # ********** Ap, pAp, Bp, pBp ******
     if (!interact) {
@@ -815,14 +830,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   fit3sls <- systemfit(system, "3SLS", inst = formula(zlist), data = new.data,
     restrict.matrix = Rmat)
 
-  ## Calculation of w_j
+  # Calculation of w_j
   W = matrix(0, n, neq)
   for (i in 1:neq) W[, i] <- predict(fit3sls)[, i]
 
   colnames(W) <- labels.share[1:neq]
 
 
-  ## Preparation of the display of results
+  # Preparation of the display of results
   VARS = c("Constante")
   for (i in 1:ny) VARS <- c(VARS, paste("y^", i, sep = ""))
   for (i in 1:nsoc) VARS <- c(VARS, labels.soc[i])
@@ -854,7 +869,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   if (pz.inter) {
     for (i in interpz) {
       for (j in 1:neq) {
-        form33 <- c(form33, paste(labels.soc[i], "*", labels.price[j], sep = ""))
+        form33 <- c(form33, paste(labels.soc[i], "*", labels.price[j],
+                                  sep = ""))
       }
     }
   }
@@ -862,7 +878,9 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   for (i in 1:ny) form44 <- c(form44, paste("inst_y^", i, sep = ""))
   form55 <- form44
   if (zy.inter) {
-    for (i in 1:nsoc) form55 <- c(form55, paste("inst_y*", labels.soc[i], sep = ""))
+    for (i in 1:nsoc) {
+      form55 <- c(form55, paste("inst_y*", labels.soc[i], sep = ""))
+    }
   }
   form66 <- form55
   if (py.inter) {
@@ -897,11 +915,11 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   # - the list of all variables
   # - others objects used in the estimation : var.soc (demographic variables),
   # shares (matrix of budget shares), log.price (matrix of prices), neq (number
-  # of equations without the last equation), y.power (hightest # power of y), nsoc
-  # (number of demographic variables), interact (a dummy equal to one if there
-  # are interaction), py.inter (a dummy equal to one if there are interactions
-  # between Prices and y, pz.inter (a dummy equal to one if there are
-  # interactions between Prices and demographic variables, zy.inter (a dummy
+  # of equations without the last equation), y.power (hightest # power of y),
+  # nsoc (number of demographic variables), interact (a dummy equal to one if
+  # there are interaction), py.inter (a dummy equal to one if there are
+  # interactions between Prices and y, pz.inter (a dummy equal to one if there
+  # are interactions between Prices and demographic variables, zy.inter (a dummy
   # equal to one if there are interactions # between demographics and y, interpz
   # (that allows to choose the variables Z to crossed with the price), fit3sls
   # (object of class systemfit), log.exp (the logaritm of total expenditure),
