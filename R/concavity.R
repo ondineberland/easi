@@ -334,7 +334,7 @@ concavity <- function(object = object) {
 
   testconcav <- matrix(0, n, 1)
   for (i in 1:n) {
-    testconcav[i] <- semidefiniteness(hess[, , i], positive = TRUE)
+    testconcav[i] <- miscTools::semidefiniteness(hess[, , i], positive = TRUE)
     if (!testconcav[i])
       testconcav[i] <- 1 else testconcav[i] <- 0
   }
@@ -347,5 +347,5 @@ concavity <- function(object = object) {
   }
 
   cat("\n")
-  a
+  return(a)
 }

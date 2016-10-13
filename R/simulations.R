@@ -87,15 +87,12 @@ simulations <- function(object = object, log.price_new = log.price_new,
       }
     }
 
-
     W[, i] <- cc[i] + tot3 + tot4 + tot5 + tot6 + tot7
-
   }
-
 
   colnames(W) <- labels.share[1:neq]
 
-  Result <- list(
+  result <- list(
     CoefCov = fit3sls$coefCov,
     fit3sls = fit3sls,
     y = y,
@@ -119,6 +116,5 @@ simulations <- function(object = object, log.price_new = log.price_new,
     fitted.w = W
     )
 
-  Result
-
+  return(result)
 }

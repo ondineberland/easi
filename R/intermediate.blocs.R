@@ -220,8 +220,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
 
   colnames(cc) <- c(noms, "others")
 
-
-  Result <- list(
+  result <- list(
     CoefCov = fit3sls$coefCov,
     a = a,
     y = y,
@@ -257,8 +256,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     gjt = gjt,
     hjt = hjt,
     cc = cc,
-    lnx = lnx)
-
-  Result
-
+    lnx = lnx
+    )
+  return(result)
 }

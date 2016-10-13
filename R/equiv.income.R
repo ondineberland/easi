@@ -86,5 +86,5 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
     "\n")
   cat("\n", "           the reference situation is equal to :", mean(y2), "\n")
 
-  equiv_income
+  return(equiv_income)
 }

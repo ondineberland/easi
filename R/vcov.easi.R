@@ -7,5 +7,5 @@ vcov.easi <- function(object = object, ...) {
   }
   tp <- object$CoefCov
   colnames(tp) <- rownames(tp) <- VARS2
-  tp
+  return(tp)
 }

@@ -359,8 +359,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   while (crit_test > conv_crit) {
 
     iter <- iter + 1
-    fit3sls <- systemfit(system, "3SLS", inst = formula(zlist), data = new.data,
-      restrict.matrix = Rmat)
+    fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
+      data = new.data, restrict.matrix = Rmat)
 
     if (interact) {
       if (iter > 1)
@@ -611,8 +611,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   cat("\n", "*** Please wait during the estimation... ***", "\n")
   while (crit_test > conv_crit) {
     iter <- iter + 1
-    fit3sls <- systemfit(system, "3SLS", inst = formula(zlist), data = new.data,
-      restrict.matrix = Rmat)
+    fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
+      data = new.data, restrict.matrix = Rmat)
 
     if (interact) {
       if (iter > 1)
@@ -827,8 +827,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   }
   cat("\n", "*** Estimation successfully completed ***", "\n")
   # ********* final estimate ****************
-  fit3sls <- systemfit(system, "3SLS", inst = formula(zlist), data = new.data,
-    restrict.matrix = Rmat)
+  fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
+    data = new.data, restrict.matrix = Rmat)
 
   # Calculation of w_j
   W = matrix(0, n, neq)
@@ -927,7 +927,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   # variables), labels (the names of budget shares), dim_varlist (nombre de
   # variables)
 
-  Result <- list(Residuals = Residuals,
+  result <- list(
+    Residuals = Residuals,
     CoefCov = summary(fit3sls)$coefCov,
     fitted.w = W,
     summary = a,
@@ -951,7 +952,6 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
     labels.share = labels.share,
     dim_varlist = dim_varlist,
     VARS = VARS)
-  class(Result) <- c("easi", "systemfit")
-  Result
-
+  class(result) <- c("easi", "systemfit")
+  return(result)
 }

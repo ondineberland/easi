@@ -7,5 +7,5 @@ coef.easi <- function(object = object, ...) {
   }
   tp <- object$summary$coefficients
   rownames(tp) <- VARS2
-  tp
+  return(tp)
 }
