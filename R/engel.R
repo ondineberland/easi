@@ -32,9 +32,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
   n <- length(object$log.exp)
 
-  temp <- intermediate.blocs(object, log.price=object$log.price,
-                             var.soc=object$var.soc,
-                             log.exp=object$log.exp)
+  temp <- intermediate.blocs(object, log.price = object$log.price, var.soc = object$var.soc,
+    log.exp = object$log.exp)
   my.array <- temp$my.array
   bjk <- temp$bjk
   P <- temp$P
@@ -56,7 +55,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     tot3 <- tot4 <- tot5 <- tot6 <- tot7 <- 0
 
     for (j in 1:y.power) {
-      tempo <- bjr[j, i] * y ^ j
+      tempo <- bjr[j, i] * y^j
       tot3 <- tot3 + tempo
     }
 
@@ -66,13 +65,13 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     }
 
     if (zy.inter) {
-      for (j in 1:nsoc){
+      for (j in 1:nsoc) {
         tempo <- hjt[j, i] * Z[, j + 1] * y
         tot5 <- tot5 + tempo
       }
     }
 
-    if (pz.inter){
+    if (pz.inter) {
       for (k in 1:neq) {
         for (t in (1:(nsoc + 1))) {
           tempo <- ajk[t, k, i] * Z[, t] * P[, k]
@@ -92,8 +91,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   }
   colnames(W) <- labels.share[1:neq]
 
-  ## Calculation of standard deviations of the fitted budget shares (if
-  ## WDELTA=TRUE) - (delta method)
+  ## Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
+  ## - (delta method)
   if (WDELTA) {
     nb <- object$dim_varlist
     MAT <- rep(1, n)
@@ -104,8 +103,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
       MAT <- cbind(MAT, Z[, i + 1])
     }
     if (zy.inter) {
-      for (i in 1:nsoc)
-      MAT <- cbind(MAT, y * Z[, i + 1])
+      for (i in 1:nsoc) MAT <- cbind(MAT, y * Z[, i + 1])
     }
     for (i in 1:neq) {
       MAT <- cbind(MAT, P[, i])
@@ -129,7 +127,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     for (i in 1:neq) {
       DD <- summary(fit3sls)$coefCov[nn:(nn + nb - 1), nn:(nn + nb - 1)]
 
-      W_e <- MAT%*%DD%*%t(MAT)
+      W_e <- MAT %*% DD %*% t(MAT)
 
       W_ecart[, i] <- sqrt(diag(W_e))
       rm(W_e)
@@ -163,8 +161,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   Wm_autres = 1 - apply(Wm, 1, sum)
   Wm = cbind(Wm, Wm_autres)
 
-  ## Calculation of confidence intervals for fitted budget shares (if
-  # WDELTA=TRUE)
+  ## Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
   if (WDELTA) {
     Wme = matrix(0, 100, neq + 1)
     for (i in 1:100) {
@@ -184,9 +181,10 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     Wmem <- Wmem[(1:20) * 5, ]
   }
 
-  if (! identical(file, FALSE)) {
+  if (!identical(file, FALSE)) {
     ### management of labels.share
-    if (length(labels.share) < 2) labels.share <- noms
+    if (length(labels.share) < 2)
+      labels.share <- noms
 
     limYY <- c()
     if (length(lim.y) < 2) {
@@ -197,40 +195,39 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
       limYY <- lim.y
     }
 
-    ss <- seq(1, neq*2, by=2)
+    ss <- seq(1, neq * 2, by = 2)
 
-    ## Export of Engel curves in the parent folder under the name "file". pdf
-    ## File name is entered on the command line
+    ## Export of Engel curves in the parent folder under the name 'file'. pdf File
+    ## name is entered on the command line
 
-    pdf(paste("./", file, ".pdf", sep=""))
+    pdf(paste("./", file, ".pdf", sep = ""))
 
-    xx <- seq(1, 100, len=20)
+    xx <- seq(1, 100, len = 20)
 
     for (i in 1:neq + 1) {
       # smoothing cubic
-      sp <- smooth.spline(c(1:100), Wm[, i], spar=0.9)
-      y.loess <- loess(Wm[, i] ~ c(1:100), span=0.75, data.frame(xxx=c(1:100),
-                                                                yyy=Wm[, i]))
-      y.predict <- predict(y.loess, data.frame(xxx=c(1:100)))
+      sp <- smooth.spline(c(1:100), Wm[, i], spar = 0.9)
+      y.loess <- loess(Wm[, i] ~ c(1:100), span = 0.75, data.frame(xxx = c(1:100),
+        yyy = Wm[, i]))
+      y.predict <- predict(y.loess, data.frame(xxx = c(1:100)))
 
-      plot(c(1:100), Wm[, i], xlab="Percentiles of total expenditure",
-           ylab="Budget shares", col="green",
-           ylim=c(limYY[ss[i]], limYY[ss[i] + 1]))
+      plot(c(1:100), Wm[, i], xlab = "Percentiles of total expenditure", ylab = "Budget shares",
+        col = "green", ylim = c(limYY[ss[i]], limYY[ss[i] + 1]))
 
       if (i <= neq) {
-        title(main=labels.share[i])
+        title(main = labels.share[i])
       } else {
-        title(main ="Other goods")
+        title(main = "Other goods")
       }
 
       # plot of the adjustment curve
-      lines(predict(sp, xx), col="red")
-      lines(c(1:100), y.predict, col="blue")
-      lines(ksmooth(c(1:100), Wm[, i], "normal", bandwidth=10), col="black")
+      lines(predict(sp, xx), col = "red")
+      lines(c(1:100), y.predict, col = "blue")
+      lines(ksmooth(c(1:100), Wm[, i], "normal", bandwidth = 10), col = "black")
 
       if (WDELTA) {
-        points(c((1:20) * 5), Wmep[, i], pch="+", cex=1, col="violet")
-        points(c((1:20) * 5), Wmem[, i], pch="+", cex=1, col="violet")
+        points(c((1:20) * 5), Wmep[, i], pch = "+", cex = 1, col = "violet")
+        points(c((1:20) * 5), Wmem[, i], pch = "+", cex = 1, col = "violet")
       }
     }
 
