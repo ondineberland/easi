@@ -1,12 +1,57 @@
-elastic <- function(object = object,
-  type = c("price", "income", "demographics"),
-  sd = FALSE) {
+elastic <- function(object, type = c("price", "income", "demographics"),
+                    sd = FALSE) {
+  # Calculate elasticities from an EASI result
+  #
+  # Args:
+  #   object: an EASI results object, returned by easi()
+  #   type: a vector including any of the values "price", "income" and/or
+  #         "demographics". The corresponding elasticities are computed and
+  #         returned.
+  #   sd: if TRUE (default: FALSE), the standard deviations of the
+  #       quantities are also returned.
+  #
+  # Returns:
+  #   A list with some or all of the following names:
+  #
+  #   Price
+  #
+  #   EP: semi-elasticities of budget shares in respect to log.prices.
+  #   EP_SE: standard deviations of semi-elasticities of budget shares in
+  #          respect to log.prices.
+  #   EPS: matrix of compensated quantity derivatives with respect to unlogged
+  #        log.prices.
+  #   EPQ: compensated (good-specific) expenditures with respect to log.prices.
+  #   ELASTPRICE: elasticities of quantities in respect to log.prices.
+  #   ELASTPRICE_SE: standard deviations of elasticities of quantities in
+  #                  respect to log.prices.
+  #
+  #   Income
+  #
+  #   ELASTINCOME: elasticities of quantities in respect to income.
+  #   ELASTINCOME_SE: standard deviations of elasticities of quantities in
+  #                   respect to income.
+  #   ER: semi-elasticities of budget shares in respect to real expenditures,
+  #       mean across all observations.
+  #   ER.full: semi-elasticities of budget shares in respect to real
+  #            expenditures.
+  #   ER.quantiles: like ER, but the median within each percentile of log total
+  #                 expenditure.
+  #
+  #   Demographics
+  #
+  #   ER_SE: standard deviations of semi-elasticities of budget shares in
+  #          respect to real expenditures.
+  #   EZ: semi-elasticities of budget shares in respect to demographics.
+  #   EZ_SE: standard deviations of semi-elasticities of budget shares in
+  #          respect to demographics.
 
-  type <- match.arg(type)
+  type <- type[type %in% c("price", "income", "demographics")]
 
-  EPDELTA <- ifelse(((type == "price") & (sd == TRUE)), TRUE, FALSE)
-  ERDELTA <- ifelse(((type == "income") & (sd == TRUE)), TRUE, FALSE)
-  EZDELTA <- ifelse(((type == "demographics") & (sd == TRUE)), TRUE, FALSE)
+  if (length(type) == 0) {
+    return(list())
+  }
+
+  result <- list()
 
   fit3sls <- object$fit3sls
   varlist <- object$varlist
@@ -46,7 +91,7 @@ elastic <- function(object = object,
   lnx <- object$log.exp
   y <- object$y
 
-  if (type == "price") {
+  if ("price" %in% type) {
     # Calculation of log.price elasticities
     # *** semi-elasticities with respect to log.prices
     # page 13 formula 23 EASI made EASIER (Pendakur 2008)
@@ -65,10 +110,11 @@ elastic <- function(object = object,
     }
 
     colnames(EP) <- rownames(EP) <- c(labels.price[1:neq], "pothers")
+    result$EP <- EP
 
     # Calculation of standard deviations of log.price elasticities (Delta
     # method) if EPDELTA=TRUE
-    if (EPDELTA) {
+    if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
       EP_SE = matrix(0, neq + 1, neq + 1)
       ELASTPRICE_SE = matrix(0, neq + 1, neq + 1)
@@ -121,6 +167,8 @@ elastic <- function(object = object,
       colnames(ELASTPRICE_SE) <- rownames(ELASTPRICE_SE) <- colnames(EP_SE) <-
         rownames(EP_SE) <- c(labels.price[1:neq], "pothers")
 
+      result$EP_SE <- EP_SE
+      result$ELASTPRICE_SE <- ELASTPRICE_SE
     }
 
     # Normalised Slutsky matrix
@@ -133,6 +181,7 @@ elastic <- function(object = object,
       matrix(diag(apply(shares[, 1:(neq + 1)], 2, mean)),
       neq + 1, neq + 1)
     colnames(EPS) <- rownames(EPS) <- c(labels.price[1:neq], "pothers")
+    result$EPS <- EPS
 
     # Compensated (good-specific) expenditures elasticities with respect to
     # log.prices
@@ -142,6 +191,7 @@ elastic <- function(object = object,
       (EP + apply(shares[, 1:(neq + 1)], 2, mean) %*%
       t(apply(shares[, 1:(neq + 1)], 2, mean)))
     colnames(EPQ) <- rownames(EPQ) <- c(labels.price[1:neq], "pothers")
+    result$EPQ <- EPQ
 
     # calculation of elasticity of good j with respect to the log.price of good
     # i
@@ -204,9 +254,11 @@ elastic <- function(object = object,
 
     colnames(ELASTPRICE) <- rownames(ELASTPRICE) <- c(labels.price[1:neq],
       "pothers")
+
+    result$ELASTPRICE <- ELASTPRICE
   }
 
-  if (type == "income") {
+  if ("income" %in% type) {
     # calculation of elasticity of good j with respect to the log.price of good
     # i
     # calculation of elasticity of good j with respect to income
@@ -265,41 +317,48 @@ elastic <- function(object = object,
     }
 
     colnames(ELASTINCOME) <- c(labels.share[1:neq], "others")
+    result$ELASTINCOME <- ELASTINCOME
 
     # Calculation of income elasticities of budget shares
     # page 13 formula 23 'EASI made EASIER' (Pendakur 2008)
-    ER = matrix(0, 1, (neq + 1))
+    ER.full <- matrix(NA, n, neq + 1)
+    ER <- matrix(NA, 1, neq + 1)
     for (i in 1:(neq + 1)) {
-      tot11 = 0
-      tempo1 = tempo2 = tempo3 = 0
+      tempo1 <- tempo3 <- 0
 
-      for (t in 1:y.power) {
-        tempo0 <- bjr[t, i] * t * y^(t - 1)
-        tempo2 <- tempo2 + tempo0
-      }
+      tempo2 <- sum(sapply(1:y.power, function(t) bjr[t, i] * t * y ^ (t - 1)))
 
       if (zy.inter) {
-        for (t in 1:nsoc) {
-          tempo0 <- hjt[t, i] * Z[, t + 1]
-          tempo3 <- tempo3 + tempo0
-        }
+        tempo3 <- sum(sapply(1:nsoc, function(t) hjt[t, i] * Z[, t + 1]))
       }
 
       if (py.inter) {
-        for (k in 1:(neq + 1)) {
-          tempo0 <- bjk[k, i] * P[, k]
-          tempo1 <- tempo1 + tempo0
-        }
+        tempo1 <- sum(sapply(1:(neq + 1), function(k) bjk[k, i] * P[, k]))
       }
 
-      tot11 <- tot11 + tempo1 + tempo2 + tempo3
-      ER[i] = mean(tot11)
+      ER.full[, i] <- tempo1 + tempo2 + tempo3
+      ER[i] <- mean(ER.full[, i])
     }
 
-    colnames(ER) <- c(labels.share[1:neq], "others")
+    # Similar to code for Engel curves
+    qtile <- cut(lnx, breaks = quantile(lnx, seq(0, 1, 0.01)),
+                 include.lowest = TRUE, labels = 1:100)
+
+    ER.quantile <- matrix(0, 100, neq + 1)
+    for (i in 1:100) {
+      for (j in 1:(neq + 1)) {
+        ER.quantile[i, j] <- median(ER.full[qtile == i, j])
+      }
+    }
+
+    colnames(ER) <- colnames(ER.full) <- colnames(ER.quantile) <- labels.share
+
+    result$ER <- ER
+    result$income <- ER.full
+    result$income.pctile <- ER.quantile
 
     # Calculation of standard deviations of income elasticities (delta method)
-    if (ERDELTA) {
+    if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
       ER_SE = matrix(0, 1, neq + 1)
       ELASTINCOME_SE = matrix(0, 1, neq + 1)
@@ -308,7 +367,6 @@ elastic <- function(object = object,
         for (j in (1:y.power)) {
           tt <- c(tt, paste("eq", i, "_y", j, sep = ""))
         }
-
 
         if (zy.inter) {
           for (t in (1:nsoc)) {
@@ -349,10 +407,13 @@ elastic <- function(object = object,
 
       colnames(ER_SE) <- colnames(ELASTINCOME_SE) <- c(labels.share[1:neq],
         "others")
+
+      result$ER_SE <- ER_SE
+      result$ELASTINCOME_SE <- ELASTINCOME_SE
     }
   }
 
-  if (type == "demographics") {
+  if ("demographics" %in% type) {
     # Calculation of sociodemographic elasticities of budget shares
     # page 13 formula 23 'EASI made EASIER' (Pendakur 2008)
     EZ = matrix(0, nsoc, (neq + 1))
@@ -378,10 +439,11 @@ elastic <- function(object = object,
 
     colnames(EZ) <- c(labels.share[1:neq], "others")
     rownames(EZ) <- labels.soc
+    result$EZ <- EZ
 
     # Calculation of standard deviations of sociodemographic elasticities (delta
     # method) if 'EZDELTA=TRUE'
-    if (EZDELTA) {
+    if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
       EZ_SE = matrix(0, nsoc, neq + 1)
       for (i in 1:neq) {
@@ -421,59 +483,9 @@ elastic <- function(object = object,
 
       colnames(EZ_SE) <- c(labels.share[1:neq], "others")
       rownames(EZ_SE) <- labels.soc
+      result$EZ_SE <- EZ_SE
     }
   }
-
-  if (type == "demographics") {
-    ER = ELASTINCOME = EP = EPS = EPQ = ELASTPRICE = "Not calculated"
-  }
-  if (type == "income") {
-    EZ = EP = EPS = EPQ = ELASTPRICE = "Not calculated"
-  }
-  if (type == "price") {
-    ER = ELASTINCOME = EZ = "Not calculated"
-  }
-  if (!EPDELTA) {
-    EP_SE = ELASTPRICE_SE = "Not calculated"
-  }
-  if (!ERDELTA) {
-    ER_SE = ELASTINCOME_SE = "Not calculated"
-  }
-  if (!EZDELTA) {
-    EZ_SE = "Not calculated"
-  }
-
-  # Respectively:
-  # - Semi-elasticities of budget shares in respect to log.prices
-  # - Standard deviations of semi-elasticities of budget shares in respect to
-  #   log.prices
-  # - Matrix of compensated quantity derivatives with respect to unlogged
-  #   log.prices
-  # - Compensated (good-specific) expenditures with respect to log.prices
-  # - Elasticities of quantities in respect to log.prices
-  # - Elasticities of quantities in respect to income
-  # - Standard deviations of elasticities of quantities in respect to log.prices
-  # - Standard deviations of elasticities of quantities in respect to income
-  # - Semi-elasticities of budget shares in respect to real expenditures
-  # - Standard deviations of Semi-elasticities of budget shares in respect
-  #   to real expenditures
-  # - Semi-elasticities of budget shares in respect to demographics
-  # - Standard deviations of semi-elasticities of budget shares in respect to
-  #   demographics
-
-  result <- list(
-    EP = EP,
-    EP_SE = EP_SE,
-    EPS = EPS,
-    EPQ = EPQ,
-    ELASTPRICE = ELASTPRICE,
-    ELASTINCOME = ELASTINCOME,
-    ELASTPRICE_SE = ELASTPRICE_SE,
-    ELASTINCOME_SE = ELASTINCOME_SE,
-    ER = ER,
-    ER_SE = ER_SE,
-    EZ = EZ,
-    EZ_SE = EZ_SE)
 
   return(result)
 }
