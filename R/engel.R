@@ -11,10 +11,11 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   #   lim.y: if given, the Y-limits for plots.
   #
   # Returns: a list containing:
-  #  W:
-  #  Wm:  data frame containing median budget share.
-  #  Wmep: confidence interval, upper bound.
-  #  Wmer: confidence interval, lower bound.
+  #  w: data frame containing the budget share for every observation.
+  #  w.pctile: data frame containing median budget share.
+  #  w.pctile.upper: confidence interval, upper bound.
+  #  w.pctile.lower: confidence interval, lower bound.
+
   WDELTA <- ifelse(sd, TRUE, FALSE)
   fit3sls <- object$fit3sls
   var.soc <- object$var.soc
@@ -46,6 +47,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   noms <- temp$noms
   lnx <- temp$log.exp
   y <- temp$y
+
+  result <- list()
 
   # Calculation of w_j
   W = matrix(0, n, neq)
@@ -89,7 +92,11 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
     W[, i] <- cc[i] + tot3 + tot4 + tot5 + tot6 + tot7
   }
-  colnames(W) <- labels.share[1:neq]
+
+  # Labels of W matrix
+  W <- cbind(W, 1 - apply(W, 1, sum))
+  colnames(W) <- labels.share
+  result$w <- W
 
   # Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
   # - (delta method)
@@ -136,30 +143,20 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     }
   }
 
-  # Labels of W matrix
-  colnames(W) = noms
-
   # Engel Curves
-  quant = quantile(lnx, seq(0, 1, 0.01))
+  ee <- cut(lnx, breaks = quantile(lnx, seq(0, 1, 0.01)),
+            include.lowest = TRUE, labels = 1:100)
 
-  ee = rep(1, n)
-  for (j in 1:n) {
-    for (i in 1:100) {
-      if (lnx[j] > quant[i]) {
-        ee[j] = i
-      }
-    }
-  }
-
-  Wm = matrix(0, 100, neq)
+  Wm <- matrix(0, 100, neq)
   for (i in 1:100) {
     for (j in 1:neq) {
-      Wm[i, j] = median(W[ee == i, j])
+      Wm[i, j] <- median(W[ee == i, j])
     }
   }
 
-  Wm_autres = 1 - apply(Wm, 1, sum)
-  Wm = cbind(Wm, Wm_autres)
+  Wm <- cbind(Wm, 1 - apply(Wm, 1, sum))
+  colnames(Wm) <- labels.share
+  result$w.pctile <- Wm
 
   # Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
   if (WDELTA) {
@@ -179,6 +176,9 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
     Wmep <- Wmep[(1:20) * 5, ]
     Wmem <- Wmem[(1:20) * 5, ]
+
+    result$w.pctile.upper <- Wmep
+    result$w.pctile.lower <- Wmem
   }
 
   if (!identical(file, FALSE)) {
@@ -233,20 +233,6 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
     dev.off()
   }
-
-  # refreshment
-  if (WDELTA) {
-    rm(MAT)
-    rm(W_ecart)
-    rm(DD)
-  }
-
-  result <- list(
-    W=W,
-    Wm=Wm,
-    Wmep=Wmep,
-    Wmem=Wmem
-    )
 
   return(result)
 }
