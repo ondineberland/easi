@@ -51,7 +51,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   result <- list()
 
   # Calculation of w_j
-  W = matrix(0, n, neq)
+  W <- matrix(0, n, neq)
 
   ajk <- my.array
   for (i in 1:neq) {
@@ -160,15 +160,15 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
   # Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
   if (WDELTA) {
-    Wme = matrix(0, 100, neq + 1)
+    Wme <- matrix(0, 100, neq + 1)
     for (i in 1:100) {
       for (j in 1:neq) {
-        Wme[i, j] = median(W_ecart[ee == i, j])
+        Wme[i, j] <- median(W_ecart[ee == i, j])
       }
     }
 
     for (i in 1:100) {
-      Wme[i, neq + 1] = sqrt(sum(Wme[i, 1:neq]^2))
+      Wme[i, neq + 1] <- sqrt(sum(Wme[i, 1:neq]^2))
     }
 
     Wmep <- Wm + 1.96 * Wme
@@ -232,6 +232,12 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     }
 
     dev.off()
+  }
+
+  if (WDELTA) {
+    rm(MAT)
+    rm(W_ecart)
+    rm(DD)
   }
 
   return(result)
