@@ -181,7 +181,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     result$w.pctile.lower <- Wmem
   }
 
-  if (!identical(file, FALSE)) {
+  write.file <- ifelse(file, TRUE, FALSE)
+  if (write.file) {
     # management of labels.share
     if (length(labels.share) < 2)
       labels.share <- noms
@@ -200,7 +201,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     # Export of Engel curves in the parent folder under the name 'file'. pdf File
     # name is entered on the command line
 
-    pdf(paste("./", file, ".pdf", sep = ""))
+    pdf(paste0(file, ".pdf"))
 
     xx <- seq(1, 100, len = 20)
 
