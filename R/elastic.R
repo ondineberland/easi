@@ -27,15 +27,20 @@ elastic <- function(object, type = c("price", "income", "demographics"),
   #
   #   Income
   #
-  #   ELASTINCOME: elasticities of quantities in respect to income.
+  #   ELASTINCOME: elasticities of quantities in respect to income, mean across
+  #                all observations.
   #   ELASTINCOME_SE: standard deviations of elasticities of quantities in
   #                   respect to income.
+  #   qty.income: elasticities of quantities in respect to income, all
+  #               observations.
+  #   qty.income.pctile: median of qty.income within each percentile of log
+  #                      total expenditure.
   #   ER: semi-elasticities of budget shares in respect to real expenditures,
   #       mean across all observations.
-  #   ER.full: semi-elasticities of budget shares in respect to real
-  #            expenditures.
-  #   ER.quantiles: like ER, but the median within each percentile of log total
-  #                 expenditure.
+  #   share.income: semi-elasticities of budget shares in respect to real
+  #                 expenditures, all observations.
+  #   share.income.pctile: median of share.income within each percentile of log
+  #                        total expenditure.
   #
   #   Demographics
   #
@@ -95,17 +100,17 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # Calculation of log.price elasticities
     # *** semi-elasticities with respect to log.prices
     # page 13 formula 23 EASI made EASIER (Pendakur 2008)
-    EP = matrix(0, neq + 1, neq + 1)
+    EP <- matrix(0, neq + 1, neq + 1)
     a <- my.array
     for (i in 1:(neq + 1)) {
       for (k in 1:(neq + 1)) {
-        tot10 = 0
+        tot10 <- 0
         for (t in (1:(nsoc + 1))) {
           tempo <- a[t, k, i] * Z[, t]
           tot10 <- tot10 + tempo
         }
         tot10 <- tot10 + bjk[k, i] * y
-        EP[k, i] = mean(tot10)
+        EP[k, i] <- mean(tot10)
       }
     }
 
@@ -116,8 +121,8 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # method) if EPDELTA=TRUE
     if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
-      EP_SE = matrix(0, neq + 1, neq + 1)
-      ELASTPRICE_SE = matrix(0, neq + 1, neq + 1)
+      EP_SE <- matrix(0, neq + 1, neq + 1)
+      ELASTPRICE_SE <- matrix(0, neq + 1, neq + 1)
       for (i in 1:neq) {
         for (j in 1:neq) {
           tt <- paste("eq", i, "_np", j, sep = "")
@@ -176,7 +181,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # log.prices)
     # own-log.price Slutsky terms in Pendakur page 849 'Tricks with Hicks : The
     # EASI demand system' (Lewbel & Pendakur 2008)
-    EPS = EP + apply(shares[, 1:(neq + 1)], 2, mean) %*%
+    EPS <- EP + apply(shares[, 1:(neq + 1)], 2, mean) %*%
       t(apply(shares[, 1:(neq + 1)], 2, mean)) -
       matrix(diag(apply(shares[, 1:(neq + 1)], 2, mean)),
       neq + 1, neq + 1)
@@ -187,7 +192,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # log.prices
     # own-log.price Quant elast in Pendakur page 849 'Tricks with Hicks
     # : The EASI demand system' (Lewbel & Pendakur 2008)
-    EPQ = solve(diag(apply(shares[, 1:(neq + 1)], 2, mean))) %*%
+    EPQ <- solve(diag(apply(shares[, 1:(neq + 1)], 2, mean))) %*%
       (EP + apply(shares[, 1:(neq + 1)], 2, mean) %*%
       t(apply(shares[, 1:(neq + 1)], 2, mean)))
     colnames(EPQ) <- rownames(EPQ) <- c(labels.price[1:neq], "pothers")
@@ -259,65 +264,60 @@ elastic <- function(object, type = c("price", "income", "demographics"),
   }
 
   if ("income" %in% type) {
-    # calculation of elasticity of good j with respect to the log.price of good
-    # i
     # calculation of elasticity of good j with respect to income
     ajk <- my.array
+    ei.full <- matrix(0, n, neq + 1)
     ELASTINCOME <- matrix(0, 1, neq + 1)
     for (i in 1:(neq + 1)) {
       for (q in 1:(neq + 1)) {
+        C <- rowSums(sapply(1:y.power, function(j) j * bjr[j, i] * y ^ (j - 1)))
 
-        C <- 0
-        for (j in 1:y.power) {
-          tempo <- j * bjr[j, i] * y^{
-          j - 1
-          }
-          C <- C + tempo
-        }
-
-        D <- 0
+        D <- G <- F <- 0
         if (zy.inter) {
-          for (j in 1:nsoc) {
-          tempo <- hjt[j, i] * Z[, j + 1]
-          D <- D + tempo
-          }
+          D <- rowSums(sapply(1:nsoc, function(j) hjt[j, i] * Z[, j + 1]))
         }
 
-        E <- 0
-        for (t in (1:(nsoc + 1))) {
-          tempo <- ajk[t, q, i] * Z[, t]
-          E <- E + tempo
-        }
+        E <- rowSums(sapply(1:(nsoc + 1), function(t) ajk[t, q, i] * Z[, t]))
 
-        G <- 0
         if (py.inter) {
-          for (k in 1:(neq + 1)) {
-          tempo <- bjk[k, i] * P[, k]
-          G <- G + tempo
-          }
-
+          G <- rowSums(sapply(1:(neq + 1), function(k) bjk[k, i] * P[, k]))
           F <- bjk[q, i] * y
         }
 
-        U <- 0
+        U <- 9
         for (d in 1:(neq + 1)) {
-          for (t in (1:(nsoc + 1))) {
-          tempo <- ajk[t, d, i] * Z[, t] * P[, d]
-          U <- U + tempo
-          }
+          U <- U + rowSums(sapply(1:(nsoc + 1),
+                                  function(t) ajk[t, d, i] * Z[, t] * P[, d]))
         }
 
-        B <- -mean(shares[, q] + U)/mean(1 - 1/2 * tot2) - mean(y)/mean(1 -
-          1/2 * tot2) * mean(G)
+        B <- -mean(shares[, q] + U) / mean(1 - 1/2 * tot2) - mean(y) /
+             mean(1 - 1/2 * tot2) * mean(G)
 
         H <- B * (C + D + G) + E + F
 
-        ELASTINCOME[1, i] <- 1 + (mean(C + D + G))/mean(shares[, i])
+
+        ELASTINCOME[1, i] <- 1 + (mean(C + D + G)) / mean(shares[, i])
+        ei.full[, i] <- 1 + (C + D + G) / shares[, i]
       }
     }
 
-    colnames(ELASTINCOME) <- c(labels.share[1:neq], "others")
+    # Similar to code for Engel curves
+    qtile <- cut(lnx, breaks = quantile(lnx, seq(0, 1, 0.01)),
+                 include.lowest = TRUE, labels = 1:100)
+
+    # Compute percentile median
+    ei.pctile <- matrix(0, 100, neq + 1)
+    for (i in 1:100) {
+      for (j in 1:(neq + 1)) {
+        ei.pctile[i, j] <- median(ei.full[qtile == i, j])
+      }
+    }
+
+    colnames(ELASTINCOME) <- colnames(ei.full) <- colnames(ei.pctile) <-
+      labels.share
     result$ELASTINCOME <- ELASTINCOME
+    result$qty.income <- ei.full
+    result$qty.income.pctile <- ei.pctile
 
     # Calculation of income elasticities of budget shares
     # page 13 formula 23 'EASI made EASIER' (Pendakur 2008)
@@ -326,24 +326,22 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     for (i in 1:(neq + 1)) {
       tempo1 <- tempo3 <- 0
 
-      tempo2 <- sum(sapply(1:y.power, function(t) bjr[t, i] * t * y ^ (t - 1)))
+      tempo2 <- rowSums(sapply(1:y.power,
+                               function(t) bjr[t, i] * t * y ^ (t - 1)))
 
       if (zy.inter) {
-        tempo3 <- sum(sapply(1:nsoc, function(t) hjt[t, i] * Z[, t + 1]))
+        tempo3 <- rowSums(sapply(1:nsoc, function(t) hjt[t, i] * Z[, t + 1]))
       }
 
       if (py.inter) {
-        tempo1 <- sum(sapply(1:(neq + 1), function(k) bjk[k, i] * P[, k]))
+        tempo1 <- rowSums(sapply(1:(neq + 1), function(k) bjk[k, i] * P[, k]))
       }
 
       ER.full[, i] <- tempo1 + tempo2 + tempo3
       ER[i] <- mean(ER.full[, i])
     }
 
-    # Similar to code for Engel curves
-    qtile <- cut(lnx, breaks = quantile(lnx, seq(0, 1, 0.01)),
-                 include.lowest = TRUE, labels = 1:100)
-
+    # Compute percentile means
     ER.quantile <- matrix(0, 100, neq + 1)
     for (i in 1:100) {
       for (j in 1:(neq + 1)) {
@@ -354,14 +352,14 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     colnames(ER) <- colnames(ER.full) <- colnames(ER.quantile) <- labels.share
 
     result$ER <- ER
-    result$income <- ER.full
-    result$income.pctile <- ER.quantile
+    result$share.income <- ER.full
+    result$share.income.pctile <- ER.quantile
 
     # Calculation of standard deviations of income elasticities (delta method)
     if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
-      ER_SE = matrix(0, 1, neq + 1)
-      ELASTINCOME_SE = matrix(0, 1, neq + 1)
+      ER_SE <- matrix(0, 1, neq + 1)
+      ELASTINCOME_SE <- matrix(0, 1, neq + 1)
       for (i in (1:neq)) {
         tt <- c()
         for (j in (1:y.power)) {
@@ -416,10 +414,10 @@ elastic <- function(object, type = c("price", "income", "demographics"),
   if ("demographics" %in% type) {
     # Calculation of sociodemographic elasticities of budget shares
     # page 13 formula 23 'EASI made EASIER' (Pendakur 2008)
-    EZ = matrix(0, nsoc, (neq + 1))
+    EZ <- matrix(0, nsoc, (neq + 1))
     a <- my.array
     for (i in 1:(neq + 1)) {
-      tempo4 = tempoo = 0
+      tempo4 <- tempoo <- 0
       for (t in 1:nsoc) {
 
         if (interact) {
@@ -433,7 +431,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
         tot12 <- gjt[t, i] + hjt[t, i] * y
 
         tot12 <- tot12 + tempo4
-        EZ[t, i] = mean(tot12)
+        EZ[t, i] <- mean(tot12)
       }
     }
 
@@ -445,7 +443,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # method) if 'EZDELTA=TRUE'
     if (sd) {
       ttt <- colnames(summary(fit3sls)$coefCov)
-      EZ_SE = matrix(0, nsoc, neq + 1)
+      EZ_SE <- matrix(0, nsoc, neq + 1)
       for (i in 1:neq) {
         for (j in 1:nsoc) {
           tt <- c()
