@@ -1,5 +1,5 @@
 engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
-  # Compute and plot the Engel curves for
+  # Compute and plot the Engel curves for an estimated EASI model.
   #
   # Args:
   #   object: the results of easi::easi().
@@ -33,8 +33,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
   n <- length(object$log.exp)
 
-  temp <- intermediate.blocs(object, log.price = object$log.price, var.soc = object$var.soc,
-    log.exp = object$log.exp)
+  temp <- intermediate.blocs(object, log.price = object$log.price,
+                             var.soc = object$var.soc, log.exp = object$log.exp)
   my.array <- temp$my.array
   bjk <- temp$bjk
   P <- temp$P
@@ -98,27 +98,33 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   colnames(W) <- labels.share
   result$w <- W
 
-  # Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
-  # - (delta method)
+  # Calculation of standard deviations of the fitted budget shares (delta
+  # method)
   if (WDELTA) {
     MAT <- rep(1, n)
+
     for (i in 1:y.power) {
       MAT <- cbind(MAT, y^i)
     }
+
     for (i in 1:nsoc) {
       MAT <- cbind(MAT, Z[, i + 1])
     }
+
     if (zy.inter) {
       for (i in 1:nsoc) MAT <- cbind(MAT, y * Z[, i + 1])
     }
+
     for (i in 1:neq) {
       MAT <- cbind(MAT, P[, i])
     }
+
     if (py.inter) {
       for (i in 1:neq) {
         MAT <- cbind(MAT, y * P[, i])
       }
     }
+
     if (pz.inter) {
       for (i in interpz) {
         for (j in 1:neq) {
@@ -158,7 +164,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   colnames(Wm) <- labels.share
   result$w.pctile <- Wm
 
-  # Calculation of confidence intervals for fitted budget shares (if WDELTA=TRUE)
+  # Confidence intervals for fitted budget shares
   if (WDELTA) {
     Wme <- matrix(0, 100, neq + 1)
     for (i in 1:100) {
@@ -200,8 +206,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
     ss <- seq(1, neq * 2, by = 2)
 
-    # Export of Engel curves in the parent folder under the name 'file'. pdf File
-    # name is entered on the command line
+    # Export of Engel curves in the parent folder under the name 'file'.
+    # PDF filename is entered on the command line
 
     pdf(paste0(file, ".pdf"))
 
@@ -210,12 +216,13 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     for (i in 1:neq + 1) {
       # smoothing cubic
       sp <- smooth.spline(c(1:100), Wm[, i], spar = 0.9)
-      y.loess <- loess(Wm[, i] ~ c(1:100), span = 0.75, data.frame(xxx = c(1:100),
-        yyy = Wm[, i]))
+      y.loess <- loess(Wm[, i] ~ c(1:100), span = 0.75,
+                       data.frame(xxx = c(1:100), yyy = Wm[, i]))
       y.predict <- predict(y.loess, data.frame(xxx = c(1:100)))
 
-      plot(c(1:100), Wm[, i], xlab = "Percentiles of total expenditure", ylab = "Budget shares",
-        col = "green", ylim = c(limYY[ss[i]], limYY[ss[i] + 1]))
+      plot(c(1:100), Wm[, i], xlab = "Percentiles of total expenditure",
+           ylab = "Budget shares", col = "green",
+           ylim = c(limYY[ss[i]], limYY[ss[i] + 1]))
 
       if (i <= neq) {
         title(main = labels.share[i])
