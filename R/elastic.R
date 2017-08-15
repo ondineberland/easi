@@ -147,7 +147,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
           if (py.inter)
           MAT <- cbind(MAT, y)
 
-
+          # TODO apply the same optimization as in engel.R
           EP_SE[i, j] <- median(sqrt(diag(as.matrix(MAT) %*% as.matrix(DD) %*%
           t(as.matrix(MAT)))))
           ELASTPRICE_SE[i, j] <- EP_SE[i, j]/mean(shares[, j])
@@ -192,6 +192,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # log.prices
     # own-log.price Quant elast in Pendakur page 849 'Tricks with Hicks
     # : The EASI demand system' (Lewbel & Pendakur 2008)
+    # TODO apply the same optimization as in engel.R
     EPQ <- solve(diag(apply(shares[, 1:(neq + 1)], 2, mean))) %*%
       (EP + apply(shares[, 1:(neq + 1)], 2, mean) %*%
       t(apply(shares[, 1:(neq + 1)], 2, mean)))
@@ -392,6 +393,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
         if (py.inter)
           MAT <- cbind(MAT, P[, (1:neq)])
 
+        # TODO apply the same optimization as in engel.R
         ER_SE[1, i] <- median(sqrt(diag(as.matrix(MAT) %*% as.matrix(DD) %*%
           t(as.matrix(MAT)))))
         ELASTINCOME_SE[1, i] <- ER_SE[1, i]/mean(shares[, i])
@@ -473,6 +475,7 @@ elastic <- function(object, type = c("price", "income", "demographics"),
           }
           }
 
+          # TODO apply the same optimization as in engel.R
           EZ_SE[j, i] <- median(sqrt(diag(as.matrix(MAT) %*% as.matrix(DD) %*%
           t(as.matrix(MAT)))))
         }
