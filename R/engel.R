@@ -101,7 +101,6 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   # Calculation of standard deviations of the fitted budget shares (if WDELTA=TRUE)
   # - (delta method)
   if (WDELTA) {
-    nb <- object$dim_varlist
     MAT <- rep(1, n)
     for (i in 1:y.power) {
       MAT <- cbind(MAT, y^i)
@@ -128,19 +127,20 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
       }
     }
 
-    nn <- 1
     W_ecart <- matrix(0, n, neq)
+    D <- summary(fit3sls)$coefCov
+
+    # index D in chunks of dim_varlist
+    d <- seq(0, neq * object$dim_varlist, object$dim_varlist)
 
     for (i in 1:neq) {
-      DD <- summary(fit3sls)$coefCov[nn:(nn + nb - 1), nn:(nn + nb - 1)]
-
-      W_e <- MAT %*% DD %*% t(MAT)
-
-      W_ecart[, i] <- sqrt(diag(W_e))
-      rm(W_e)
-
-      nn <- nn + nb
+      idx <- (d[i]+1):d[i+1]
+      # Substantially faster and uses less memory than MAT %*% D[…] %*% t(MAT)
+      # when MAT is large; thanks https://stackoverflow.com/a/21708690/2362198
+      W_ecart[, i] <- sqrt(rowSums((MAT %*% D[idx, idx]) * MAT))
     }
+
+    rm(D, MAT)
   }
 
   # Engel Curves
@@ -166,6 +166,8 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
         Wme[i, j] <- median(W_ecart[ee == i, j])
       }
     }
+
+    rm(W_ecart)
 
     for (i in 1:100) {
       Wme[i, neq + 1] <- sqrt(sum(Wme[i, 1:neq]^2))
@@ -233,12 +235,6 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
     }
 
     dev.off()
-  }
-
-  if (WDELTA) {
-    rm(MAT)
-    rm(W_ecart)
-    rm(DD)
   }
 
   return(result)
