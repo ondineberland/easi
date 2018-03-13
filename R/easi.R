@@ -22,16 +22,16 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     nsoc <- ncol(var.soc)
     z <- matrix(0, n, nsoc)
     for (i in 1:nsoc) z[, i] <- var.soc[, i]
-    for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste("z", i, sep = ""))
+    for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste0("z", i))
     colnames(z) <- LABELS.Z
   }
 
   # Labels or names of the budget shares: s1 - sneq
   LABELS.W <- c()
-  for (i in 1:(neq + 1)) LABELS.W <- c(LABELS.W, paste("s", i, sep = ""))
+  for (i in 1:(neq + 1)) LABELS.W <- c(LABELS.W, paste0("s", i))
 
   LABELS.P <- c()
-  for (i in 1:(neq + 1)) LABELS.P <- c(LABELS.P, paste("p", i, sep = ""))
+  for (i in 1:(neq + 1)) LABELS.P <- c(LABELS.P, paste0("p", i))
 
   # Matrix of budget shares, 's', and the matrix of log.prices, 'p'
   s <- matrix(0, n, neq + 1)
@@ -51,7 +51,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   # labels.price
   labels.price <- rep(0, neq + 1)
   for (i in 1:(neq + 1)) {
-    labels.price[i] <- paste("p", labels.share[i], sep = "")
+    labels.price[i] <- paste0("p", labels.share[i])
   }
 
   # labels.soc
@@ -80,7 +80,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
   LABELS.np <- c()
   for (i in 1:neq) {
-    LABELS.np <- c(LABELS.np, paste("np", i, sep = ""))
+    LABELS.np <- c(LABELS.np, paste0("np", i))
   }
   colnames(np) <- LABELS.np
 
@@ -88,7 +88,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   np_backup <- matrix(0, n, neq)
   for (i in 1:neq) np_backup[, i] <- np[, i]
   tempo <- c()
-  for (i in 1:neq) tempo <- c(tempo, paste("np", i, "_backup", sep = ""))
+  for (i in 1:neq) tempo <- c(tempo, paste0("np", i, "_backup"))
   colnames(np_backup) <- tempo
 
   # Initialization of matrix Ap to 0
@@ -125,7 +125,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     tempo <- c()
     for (i in 1:neq) {
       for (j in interpz) {
-        tempo <- c(tempo, paste("np", i, "z", j, sep = ""))
+        tempo <- c(tempo, paste0("np", i, "z", j))
       }
     }
 
@@ -135,7 +135,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     tempo <- c()
     for (j in interpz) {
       for (i in 1:neq) {
-        tempo <- c(tempo, paste("np", i, "z", j, sep = ""))
+        tempo <- c(tempo, paste0("np", i, "z", j))
       }
     }
     LABELS.npz2 <- tempo
@@ -168,8 +168,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   LABELS.YY <- c()
   LABELS.Yinst <- c()
   for (i in 1:ny) {
-    LABELS.YY <- c(LABELS.YY, paste("y", i, sep = ""))
-    LABELS.Yinst <- c(LABELS.Yinst, paste("y_inst", i, sep = ""))
+    LABELS.YY <- c(LABELS.YY, paste0("y", i))
+    LABELS.Yinst <- c(LABELS.Yinst, paste0("y_inst", i))
   }
 
   colnames(YY) <- LABELS.YY
@@ -187,8 +187,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     tempo <- c()
     tempo2 <- c()
     for (i in 1:nsoc) {
-      tempo <- c(tempo, paste("yz", i, sep = ""))
-      tempo2 <- c(tempo2, paste("yzinst", i, sep = ""))
+      tempo <- c(tempo, paste0("yz", i))
+      tempo2 <- c(tempo2, paste0("yzinst", i))
     }
 
     colnames(yz) <- tempo
@@ -201,7 +201,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     for (i in 1:neq) ynp[, i] <- y * np[, i]
 
     tempo <- c()
-    for (i in 1:neq) tempo <- c(tempo, paste("ynp", i, sep = ""))
+    for (i in 1:neq) tempo <- c(tempo, paste0("ynp", i))
 
     LABELS.ynp <- tempo
     colnames(ynp) <- tempo
@@ -210,7 +210,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     for (i in 1:neq) ynpinst[, i] <- y_inst * np[, i]
 
     tempo <- c()
-    for (i in 1:neq) tempo <- c(tempo, paste("ynpinst", i, sep = ""))
+    for (i in 1:neq) tempo <- c(tempo, paste0("ynpinst", i))
 
     colnames(ynpinst) <- tempo
   } else ynp <- ynpinst <- c()
@@ -246,7 +246,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   for (i in 1:(neq - 1)) {
     for (j in ((i + 1):neq)) {
       k <- k + 1
-      aa <- paste("eq", i, "_np", j, "-", "eq", j, "_np", i, "=0", sep = "")
+      aa <- paste0("eq", i, "_np", j, "-", "eq", j, "_np", i, "=0")
       TT[1, k] <- aa
     }
   }
@@ -260,7 +260,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     for (i in 1:(neq - 1)) {
       for (j in ((i + 1):neq)) {
         k <- k + 1
-        aa <- paste("eq", i, "_ynp", j, "-", "eq", j, "_ynp", i, "=0", sep = "")
+        aa <- paste0("eq", i, "_ynp", j, "-", "eq", j, "_ynp", i, "=0")
         TT2[1, k] <- aa
       }
     }
@@ -277,8 +277,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       for (i in 1:(neq - 1)) {
         for (j in ((i + 1):neq)) {
           k <- k + 1
-          aa <- paste("eq", i, "_np", j, "z", t, "-", "eq", j, "_np", i,
-          "z", t, "=0", sep = "")
+          aa <- paste0("eq", i, "_np", j, "z", t, "-", "eq", j, "_np", i,
+          "z", t, "=0")
           TT3[1, k] <- aa
         }
       }
@@ -315,14 +315,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
   system <- list()
   for (i in 1:neq) {
-    system <- c(system, list(formula(paste(paste("eqS", i, sep = ""), "<-",
-      paste("s", i, sep = ""), "~", form6))))
+    system <- c(system, list(formula(paste(paste0("eqS", i), "<-",
+      paste0("s", i), "~", form6))))
   }
 
   # Creation of the list of instruments for the 3SLS estimation
   if (nsoc > 0) {
     tempo <- c()
-    for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
+    for (i in 1:nsoc) tempo <- c(tempo, paste0("z", i))
     colnames(z) <- tempo
   }
 
@@ -392,7 +392,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       for (i in 1:neq) shat[, i] <- pred[, i]
 
       for (i in 1:neq) {
-        new.data[, paste("np", i, sep = "")] <- 0
+        new.data[, paste0("np", i)] <- 0
       }
       # ********* Predicted Values with p=0 and no interactions ********
       pred <- predict(fit3sls, new.data)
@@ -403,19 +403,19 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     if (interact) {
       # ******** y^i = 1 *********
-      for (j in 1:ny) new.data[, paste("y", j, sep = "")] <- 1
+      for (j in 1:ny) new.data[, paste0("y", j)] <- 1
     }
 
     if (py.inter) {
       # ********* y*p = p ********
-      for (j in 1:neq) new.data[, paste("ynp", j, sep = "")] <- new.data[,
-        paste("np", j, sep = "")]
+      for (j in 1:neq) new.data[, paste0("ynp", j)] <- new.data[,
+        paste0("np", j)]
     }
 
     if (zy.inter) {
       # ********* y*z = z ********
-      for (j in 1:nsoc) new.data[, paste("yz", j, sep = "")] <- new.data[,
-        paste("z", j, sep = "")]
+      for (j in 1:nsoc) new.data[, paste0("yz", j)] <- new.data[,
+        paste0("z", j)]
     }
 
     # ********* Predicted Values with y=1 and interactions ********
@@ -425,15 +425,15 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # ********* all p variables (p, p*z, p*y) are set to 0 ********
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- 0
+      new.data[, paste0("np", i)] <- 0
       if (py.inter)
-        new.data[, paste("ynp", i, sep = "")] <- 0
+        new.data[, paste0("ynp", i)] <- 0
     }
 
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- 0
+          new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
     }
@@ -446,15 +446,15 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-       i, "_backup", sep = "")]
+      new.data[, paste0("np", i)] <- new.data[, paste0("np",
+       i, "_backup")]
     }
 
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- new.data[, paste("np",
-          i, "_backup", sep = "")] * new.data[, paste("z", j, sep = "")]
+          new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
+          i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
@@ -463,14 +463,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     # y^i=y*p=y*z=0
     # ****
     if (interact) {
-      for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- 0
+      for (i in 1:ny) new.data[, paste0("y", i)] <- 0
 
       if (py.inter) {
-        for (i in 1:neq) new.data[, paste("ynp", i, sep = "")] <- 0
+        for (i in 1:neq) new.data[, paste0("ynp", i)] <- 0
       }
 
       if (zy.inter) {
-        for (i in 1:nsoc) new.data[, paste("yz", i, sep = "")] <- 0
+        for (i in 1:nsoc) new.data[, paste0("yz", i)] <- 0
       }
 
 
@@ -481,13 +481,13 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
       # *********** p variables are set to 0 *************
       for (i in 1:neq) {
-        new.data[, paste("np", i, sep = "")] <- 0
-        new.data[, paste("ynp", i, sep = "")] <- 0
+        new.data[, paste0("np", i)] <- 0
+        new.data[, paste0("ynp", i)] <- 0
       }
 
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- 0
+          new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
 
@@ -499,8 +499,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # *********** p variables are restored : p=p_backup
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-        i, "_backup", sep = "")]
+      new.data[, paste0("np", i)] <- new.data[, paste0("np",
+        i, "_backup")]
     }
 
     # ********** Ap, pAp, Bp, pBp ******
@@ -513,7 +513,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     pAp <- 0
     # ********** pAp=pAp+p*Ap ******
-    for (i in 1:neq) pAp <- pAp + new.data[, paste("np", i, sep = "")] * Ap[,
+    for (i in 1:neq) pAp <- pAp + new.data[, paste0("np", i)] * Ap[,
       i]
 
     if (interact) {
@@ -523,7 +523,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
       pBp <- 0
       # ********** pBp=pBp+p*Bp ******
-      for (i in 1:neq) pBp <- pBp + new.data[, paste("np", i, sep = "")] *
+      for (i in 1:neq) pBp <- pBp + new.data[, paste0("np", i)] *
         Bp[, i]
     } else Bp <- pBp <- 0
 
@@ -535,26 +535,26 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     y <- (y_stone + 0.5 * pAp)/(1 - 0.5 * pBp)
 
     # ********* Update of y^i *****
-    for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- y^i
+    for (i in 1:ny) new.data[, paste0("y", i)] <- y^i
 
     if (zy.inter) {
       # ********* Update of y*z *****
-      for (i in 1:nsoc) new.data[, paste("yz", i, sep = "")] <- y * new.data[,
-        paste("z", i, sep = "")]
+      for (i in 1:nsoc) new.data[, paste0("yz", i)] <- y * new.data[,
+        paste0("z", i)]
     }
 
     if (py.inter) {
       # ********* y*p=y*p_backup ***********
-      for (i in 1:neq) new.data[, paste("ynp", i, sep = "")] <- y * new.data[,
-        paste("np", i, "_backup", sep = "")]
+      for (i in 1:neq) new.data[, paste0("ynp", i)] <- y * new.data[,
+        paste0("np", i, "_backup")]
     }
 
     if (pz.inter) {
       # ********* z*p=z*p_backup ***********
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- new.data[, paste("np",
-          i, "_backup", sep = "")] * new.data[, paste("z", j, sep = "")]
+          new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
+          i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
@@ -594,14 +594,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     if (py.inter) {
       # ********* ypinst = y_inst*p **********
-      for (i in 1:neq) new.data[, paste("ynpinst", i, sep = "")] <- y_inst *
-        new.data[, paste("np", i, sep = "")]
+      for (i in 1:neq) new.data[, paste0("ynpinst", i)] <- y_inst *
+        new.data[, paste0("np", i)]
     }
 
     if (zy.inter) {
       # ********* yzinst = y_inst*z **********
-      for (i in 1:nsoc) new.data[, paste("yzinst", i, sep = "")] <- y_inst *
-        new.data[, paste("z", i, sep = "")]
+      for (i in 1:nsoc) new.data[, paste0("yzinst", i)] <- y_inst *
+        new.data[, paste0("z", i)]
     }
 
   }
@@ -643,7 +643,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       for (i in 1:neq) shat[, i] <- pred[, i]
 
       for (i in 1:neq) {
-        new.data[, paste("np", i, sep = "")] <- 0
+        new.data[, paste0("np", i)] <- 0
       }
 
       # ********* Predicted Values with p=0 and no interactions ********
@@ -654,19 +654,19 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     if (interact) {
       # ******** y^i = 1 *********
-      for (j in 1:ny) new.data[, paste("y", j, sep = "")] <- 1
+      for (j in 1:ny) new.data[, paste0("y", j)] <- 1
     }
 
     if (py.inter) {
       # ********* y*p = p ********
-      for (j in 1:neq) new.data[, paste("ynp", j, sep = "")] <- new.data[,
-        paste("np", j, sep = "")]
+      for (j in 1:neq) new.data[, paste0("ynp", j)] <- new.data[,
+        paste0("np", j)]
     }
 
     if (zy.inter) {
       # ********* y*z = z ********
-      for (j in 1:nsoc) new.data[, paste("yz", j, sep = "")] <- new.data[,
-        paste("z", j, sep = "")]
+      for (j in 1:nsoc) new.data[, paste0("yz", j)] <- new.data[,
+        paste0("z", j)]
     }
 
     # ********* Predicted Values with y=1 and interactions ********
@@ -676,15 +676,15 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # ********* all p variables (p, p*z, p*y) are set to 0 ********
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- 0
+      new.data[, paste0("np", i)] <- 0
       if (py.inter)
-        new.data[, paste("ynp", i, sep = "")] <- 0
+        new.data[, paste0("ynp", i)] <- 0
     }
 
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- 0
+          new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
     }
@@ -697,15 +697,15 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-        i, "_backup", sep = "")]
+      new.data[, paste0("np", i)] <- new.data[, paste0("np",
+        i, "_backup")]
     }
 
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- new.data[, paste("np",
-          i, "_backup", sep = "")] * new.data[, paste("z", j, sep = "")]
+          new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
+          i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
@@ -714,14 +714,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     # y^i=y*p=y*z=0
     # ****
     if (interact) {
-      for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- 0
+      for (i in 1:ny) new.data[, paste0("y", i)] <- 0
 
       if (py.inter) {
-        for (i in 1:neq) new.data[, paste("ynp", i, sep = "")] <- 0
+        for (i in 1:neq) new.data[, paste0("ynp", i)] <- 0
       }
 
       if (zy.inter) {
-        for (i in 1:nsoc) new.data[, paste("yz", i, sep = "")] <- 0
+        for (i in 1:nsoc) new.data[, paste0("yz", i)] <- 0
       }
 
       # ******** Predicted Values with y=0 and its interactions ********
@@ -731,13 +731,13 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
       # *********** p variables are set to 0 *************
       for (i in 1:neq) {
-        new.data[, paste("np", i, sep = "")] <- 0
-        new.data[, paste("ynp", i, sep = "")] <- 0
+        new.data[, paste0("np", i)] <- 0
+        new.data[, paste0("ynp", i)] <- 0
       }
 
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- 0
+          new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
 
@@ -749,8 +749,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     # *********** p variables are restored : p=p_backup
     for (i in 1:neq) {
-      new.data[, paste("np", i, sep = "")] <- new.data[, paste("np",
-        i, "_backup", sep = "")]
+      new.data[, paste0("np", i)] <- new.data[, paste0("np",
+        i, "_backup")]
     }
 
     # ********** Ap, pAp, Bp, pBp ******
@@ -763,7 +763,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
     pAp <- 0
     # ********** pAp=pAp+p*Ap ******
-    for (i in 1:neq) pAp <- pAp + new.data[, paste("np", i, sep = "")] * Ap[,
+    for (i in 1:neq) pAp <- pAp + new.data[, paste0("np", i)] * Ap[,
       i]
 
     if (interact) {
@@ -773,7 +773,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
       pBp <- 0
       # ********** pBp=pBp+p*Bp ******
-      for (i in 1:neq) pBp <- pBp + new.data[, paste("np", i, sep = "")] *
+      for (i in 1:neq) pBp <- pBp + new.data[, paste0("np", i)] *
         Bp[, i]
     } else Bp <- pBp <- 0
 
@@ -785,26 +785,26 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     y <- (y_stone + 0.5 * pAp)/(1 - 0.5 * pBp)
 
     # ********* Update of y^i *****
-    for (i in 1:ny) new.data[, paste("y", i, sep = "")] <- y^i
+    for (i in 1:ny) new.data[, paste0("y", i)] <- y^i
 
     if (zy.inter) {
       # ********* Update of y*z *****
-      for (i in 1:nsoc) new.data[, paste("yz", i, sep = "")] <- y * new.data[,
-        paste("z", i, sep = "")]
+      for (i in 1:nsoc) new.data[, paste0("yz", i)] <- y * new.data[,
+        paste0("z", i)]
     }
 
     if (py.inter) {
       # ********* y*p=y*p_backup ***********
-      for (i in 1:neq) new.data[, paste("ynp", i, sep = "")] <- y * new.data[,
-        paste("np", i, "_backup", sep = "")]
+      for (i in 1:neq) new.data[, paste0("ynp", i)] <- y * new.data[,
+        paste0("np", i, "_backup")]
     }
 
     if (pz.inter) {
       # ********* z*p=z*p_backup ***********
       for (i in 1:neq) {
         for (j in interpz) {
-          new.data[, paste("np", i, "z", j, sep = "")] <- new.data[, paste("np",
-          i, "_backup", sep = "")] * new.data[, paste("z", j, sep = "")]
+          new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
+          i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
@@ -850,18 +850,18 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
   # Preparation of the display of results
   VARS = c("Constante")
-  for (i in 1:ny) VARS <- c(VARS, paste("y^", i, sep = ""))
+  for (i in 1:ny) VARS <- c(VARS, paste0("y^", i))
   for (i in 1:nsoc) VARS <- c(VARS, labels.soc[i])
   if (zy.inter)
-    for (i in 1:nsoc) VARS <- c(VARS, paste("y*", labels.soc[i], sep = ""))
+    for (i in 1:nsoc) VARS <- c(VARS, paste0("y*", labels.soc[i]))
   for (i in 1:neq) VARS <- c(VARS, labels.price[i])
   if (py.inter) {
-    for (i in 1:neq) VARS <- c(VARS, paste("y*", labels.price[i], sep = ""))
+    for (i in 1:neq) VARS <- c(VARS, paste0("y*", labels.price[i]))
   }
   if (pz.inter) {
     for (i in interpz) {
       for (j in 1:neq) {
-        VARS <- c(VARS, paste(labels.soc[i], "*", labels.price[j], sep = ""))
+        VARS <- c(VARS, paste0(labels.soc[i], "*", labels.price[j]))
       }
     }
   }
@@ -871,7 +871,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
   if (nsoc > 0) {
     tempo <- c()
-    for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
+    for (i in 1:nsoc) tempo <- c(tempo, paste0("z", i))
     colnames(z) <- tempo
   }
 
@@ -883,22 +883,21 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   if (pz.inter) {
     for (i in interpz) {
       for (j in 1:neq) {
-        form33 <- c(form33, paste(labels.soc[i], "*", labels.price[j],
-                                  sep = ""))
+        form33 <- c(form33, paste0(labels.soc[i], "*", labels.price[j]))
       }
     }
   }
   form44 <- form33
-  for (i in 1:ny) form44 <- c(form44, paste("inst_y^", i, sep = ""))
+  for (i in 1:ny) form44 <- c(form44, paste0("inst_y^", i))
   form55 <- form44
   if (zy.inter) {
     for (i in 1:nsoc) {
-      form55 <- c(form55, paste("inst_y*", labels.soc[i], sep = ""))
+      form55 <- c(form55, paste0("inst_y*", labels.soc[i]))
     }
   }
   form66 <- form55
   if (py.inter) {
-    for (i in 1:neq) form66 <- c(form66, paste("y*", labels.price[i], sep = ""))
+    for (i in 1:neq) form66 <- c(form66, paste0("y*", labels.price[i]))
   }
 
   VARINST <- form66

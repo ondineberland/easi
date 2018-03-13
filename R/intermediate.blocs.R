@@ -28,7 +28,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
 
   # Labels or names of the equations:
   noms <- c()
-  for (i in 1:neq) noms <- c(noms, paste("eq", i, sep = ""))
+  for (i in 1:neq) noms <- c(noms, paste0("eq", i))
 
   # ***** new price Matrix *******
   P = log.price
@@ -52,7 +52,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   a0 <- matrix(0, neq, neq)
   for (i in 1:neq) {
     for (j in 1:neq) {
-      a0[i, j] <- coef[paste("eq", i, "_np", j, sep = "")]
+      a0[i, j] <- coef[paste0("eq", i, "_np", j)]
       my.array[1, j, i] <- a0[i, j]
     }
   }
@@ -68,8 +68,8 @@ intermediate.blocs <- function(object = object, log.price = NULL,
     for (i in 1:neq) {
       for (j in interpz) {
         for (k in 1:neq) {
-          my.array[j + 1, k, i] <- coef[paste("eq", i, "_np", k, "z",
-          j, sep = "")]
+          my.array[j + 1, k, i] <- coef[paste0("eq", i, "_np", k, "z",
+          j)]
         }
       }
     }
@@ -117,7 +117,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   if (py.inter) {
     for (i in 1:neq) {
       for (j in 1:neq) {
-        bjk[j, i] <- coef[paste("eq", i, "_ynp", j, sep = "")]
+        bjk[j, i] <- coef[paste0("eq", i, "_ynp", j)]
       }
     }
 
@@ -155,7 +155,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   bjr = matrix(0, y.power, neq + 1)
   for (i in 1:neq) {
     for (j in 1:y.power) {
-      bjr[j, i] <- coef[paste("eq", i, "_y", j, sep = "")]
+      bjr[j, i] <- coef[paste0("eq", i, "_y", j)]
     }
   }
 
@@ -170,7 +170,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   if (nsoc) {
     for (i in 1:neq) {
       for (j in 1:nsoc) {
-        gjt[j, i] <- coef[paste("eq", i, "_z", j, sep = "")]
+        gjt[j, i] <- coef[paste0("eq", i, "_z", j)]
       }
     }
 
@@ -193,7 +193,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   if (zy.inter) {
     for (i in 1:neq) {
       for (j in 1:nsoc) {
-        hjt[j, i] <- coef[paste("eq", i, "_yz", j, sep = "")]
+        hjt[j, i] <- coef[paste0("eq", i, "_yz", j)]
       }
     }
 
