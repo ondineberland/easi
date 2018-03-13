@@ -1,4 +1,4 @@
-easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
+easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
   py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = FALSE) {
 
@@ -7,18 +7,24 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   if (!y.power) {
     ny <- 3
   } else ny <- y.power
-  nsoc <- ncol(var.soc)
   neq <- ncol(shares) - 1
 
   # Number of observations
   n <- length(log.exp)
 
   # Matrix of socio-demographic variables
-  z <- matrix(0, n, nsoc)
-  for (i in 1:nsoc) z[, i] <- var.soc[, i]
   LABELS.Z <- c()
-  for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste("z", i, sep = ""))
-  colnames(z) <- LABELS.Z
+
+  if (is.null(var.soc)) {
+    nsoc <- 0
+    z <- NULL
+  } else {
+    nsoc <- ncol(var.soc)
+    z <- matrix(0, n, nsoc)
+    for (i in 1:nsoc) z[, i] <- var.soc[, i]
+    for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste("z", i, sep = ""))
+    colnames(z) <- LABELS.Z
+  }
 
   # Labels or names of the budget shares: s1 - sneq
   LABELS.W <- c()
@@ -312,9 +318,12 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   }
 
   # Creation of the list of instruments for the 3SLS estimation
-  tempo <- c()
-  for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
-  colnames(z) <- tempo
+  if (nsoc > 0) {
+    tempo <- c()
+    for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
+    colnames(z) <- tempo
+  }
+
   form11 <- c()
   for (i in 1:nsoc) form11 <- paste(form11, "+", colnames(z)[i])
   form22 <- form11
@@ -858,9 +867,12 @@ easi <- function(shares = shares, log.price = log.price, var.soc = var.soc,
   VARS2 <- c("~")
   for (i in 1:length(VARS)) VARS2 <- paste(VARS2, "+", VARS[i])
 
-  tempo <- c()
-  for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
-  colnames(z) <- tempo
+  if (nsoc > 0) {
+    tempo <- c()
+    for (i in 1:nsoc) tempo <- c(tempo, paste("z", i, sep = ""))
+    colnames(z) <- tempo
+  }
+
   form11 <- c()
   for (i in 1:nsoc) form11 <- c(form11, labels.soc[i])
   form22 <- form11
