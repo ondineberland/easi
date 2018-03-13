@@ -62,9 +62,11 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
       tot3 <- tot3 + tempo
     }
 
-    for (j in 1:nsoc) {
-      tempo <- gjt[j, i] * Z[, j + 1]
-      tot4 <- tot4 + tempo
+    if (nsoc) {
+      for (j in 1:nsoc) {
+        tempo <- gjt[j, i] * Z[, j + 1]
+        tot4 <- tot4 + tempo
+      }
     }
 
     if (zy.inter) {

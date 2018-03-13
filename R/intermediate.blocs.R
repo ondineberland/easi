@@ -58,15 +58,15 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   for (i in 1:neq) {
     for (j in 1:neq) {
       a0[i, j] <- coef[paste("eq", i, "_np", j, sep = "")]
-      my.array[, , i][1, j] <- a0[i, j]
+      my.array[1, j, i] <- a0[i, j]
     }
   }
-  my.array[, , neq + 1][1, 1:neq] <- 0 - apply(a0, 2, sum)
+  my.array[1, 1:neq, neq + 1] <- 0 - apply(a0, 2, sum)
 
   for (i in 1:neq) {
-    my.array[, , i][1, neq + 1] <- my.array[, , neq + 1][1, i]
+    my.array[1, neq + 1, i] <- my.array[1, i, neq + 1]
   }
-  my.array[, , neq + 1][1, neq + 1] <- 0 - sum(my.array[, , neq + 1][1, 1:neq])
+  my.array[1, neq + 1, neq + 1] <- 0 - sum(my.array[1, 1:neq, neq + 1])
 
 
 
@@ -75,7 +75,7 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     for (i in 1:neq) {
       for (j in interpz) {
         for (k in 1:neq) {
-          my.array[, , i][j + 1, k] <- coef[paste("eq", i, "_np", k, "z",
+          my.array[j + 1, k, i] <- coef[paste("eq", i, "_np", k, "z",
           j, sep = "")]
         }
       }
@@ -85,22 +85,22 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   for (t in interpz) {
     for (i in 1:neq) {
       for (j in 1:neq) {
-        my.array[, , neq + 1][t + 1, i] <- my.array[, , neq + 1][t + 1, i] -
-          my.array[, , j][t + 1, i]
+        my.array[t + 1, i, neq + 1] <- my.array[t + 1, i, neq + 1] -
+          my.array[t + 1, i, j]
       }
     }
   }
 
   for (t in interpz) {
     for (i in 1:neq) {
-      my.array[, , i][t + 1, neq + 1] <- my.array[, , neq + 1][t + 1, i]
+      my.array[t + 1, neq + 1, i] <- my.array[t + 1, i, neq + 1]
     }
   }
 
   for (t in interpz) {
     for (i in 1:neq) {
-      my.array[, , neq + 1][t + 1, neq + 1] <- my.array[, , neq + 1][t + 1,
-        neq + 1] - my.array[, , i][t + 1, neq + 1]
+      my.array[t + 1, neq + 1, neq + 1] <- my.array[t + 1, neq + 1, neq + 1]
+        - my.array[t + 1, neq + 1, i]
     }
   }
 
@@ -175,19 +175,20 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     bjr[j, neq + 1] <- 0 - sum(bjr[j, 1:neq])
   }
 
-
   colnames(bjr) <- c(noms, "others")
 
   # Recovery of coefficients of z variables (calculation of w_j)
   gjt = matrix(0, nsoc, neq + 1)
-  for (i in 1:neq) {
-    for (j in 1:nsoc) {
-      gjt[j, i] <- coef[paste("eq", i, "_z", j, sep = "")]
+  if (nsoc) {
+    for (i in 1:neq) {
+      for (j in 1:nsoc) {
+        gjt[j, i] <- coef[paste("eq", i, "_z", j, sep = "")]
+      }
     }
-  }
 
-  for (j in 1:nsoc) {
-    gjt[j, neq + 1] <- 0 - sum(gjt[j, 1:neq])
+    for (j in 1:nsoc) {
+      gjt[j, neq + 1] <- 0 - sum(gjt[j, 1:neq])
+    }
   }
 
   colnames(gjt) <- c(noms, "others")

@@ -1,6 +1,6 @@
 easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
-  py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = FALSE) {
+  py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = c()) {
 
   # y.power = hightest power of y nsoc = mumber of demographics variables neq =
   # number of equations (without the last item)
@@ -60,7 +60,9 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   }
 
   # interpz
-  interpz <- ifelse((length(interpz) > 1), interpz, c(1:nsoc))
+  if (pz.inter) {
+    interpz <- ifelse(length(interpz), interpz, c(1:nsoc))
+  }
 
   # Convergence criteria for iterated method. If model includes interactive
   # terms, we also define the the convergence variable (implicit utility or
