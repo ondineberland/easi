@@ -1,9 +1,8 @@
-intermediate.blocs <- function(object = object, log.price = log.price,
-  var.soc = var.soc, log.exp = log.exp) {
+intermediate.blocs <- function(object = object, log.price = NULL,
+  var.soc = NULL, log.exp = NULL) {
 
   shares <- object$shares
   fit3sls <- object$fit3sls
-  varlist <- object$varlist
   neq <- object$neq
   y.power <- object$y.power
   nsoc <- object$nsoc
@@ -12,12 +11,11 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   zy.inter <- object$zy.inter
   pz.inter <- object$pz.inter
   interpz <- object$interpz
-  log.exp <- object$log.exp
-  labels.price <- object$labels.price
-  labels.soc <- object$labels.soc
-  labels.share <- object$labels.share
-  dim_varlist <- object$dim_varlist
-  y <- object$y
+
+  # Use values from object by default
+  if (is.null(log.price)) log.price <- object$log.price
+  if (is.null(var.soc)) var.soc <- object$var.soc
+  if (is.null(log.exp)) log.exp <- object$log.exp
 
   n <- length(log.exp)
 
@@ -38,9 +36,6 @@ intermediate.blocs <- function(object = object, log.price = log.price,
 
   # **** new sociodemographic matrix *****
   Z = cbind(1, var.soc)
-
-  # **** logarithm of total expenditure *******
-  lnx <- log.exp
 
   # **** Budget shares matrix *******
   w = matrix(0, n, neq + 1)
@@ -158,11 +153,6 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     tot0 <- tot0 + tempo
   }
 
-  # Calculation of y 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
-  if (interact) {
-    y <- (lnx - tot0 + 1/2 * tot)/(1 - 1/2 * tot2)
-  } else y <- (lnx - tot0 + 1/2 * tot)
-
   # Recovery of coefficients of y^r variables (calculation of w_j)
   bjr = matrix(0, y.power, neq + 1)
   for (i in 1:neq) {
@@ -207,7 +197,6 @@ intermediate.blocs <- function(object = object, log.price = log.price,
     for (j in 1:nsoc) {
       hjt[j, neq + 1] <- 0 - sum(hjt[j, 1:neq])
     }
-
   }
   colnames(hjt) <- c(noms, "others")
 
@@ -222,42 +211,20 @@ intermediate.blocs <- function(object = object, log.price = log.price,
   colnames(cc) <- c(noms, "others")
 
   result <- list(
-    CoefCov = fit3sls$coefCov,
-    a = a,
-    y = y,
-    varlist = varlist,
-    var.soc = var.soc,
-    shares = shares,
-    log.price = log.price,
-    neq = neq,
-    y.power = y.power,
-    nsoc = nsoc,
-    interact = interact,
-    py.inter = py.inter,
-    zy.inter = zy.inter,
-    pz.inter = pz.inter,
-    interpz = interpz,
-    fit3sls = fit3sls,
-    log.exp = log.exp,
-    labels.price = labels.price,
-    labels.soc = labels.soc,
-    labels.share = labels.share,
-    dim_varlist = dim_varlist,
-    n = n,
-    coef = coef,
-    my.array = my.array,
-    tot = tot,
-    tot2 = tot2,
-    tot0 = tot0,
     bjk = bjk,
-    P = P,
-    w = w,
-    Z = Z,
     bjr = bjr,
+    cc = cc,
     gjt = gjt,
     hjt = hjt,
-    cc = cc,
-    lnx = lnx
+    noms = noms,
+    my.array = my.array,
+    P = P,
+    tot = tot,
+    tot0 = tot0,
+    tot2 = tot2,
+    w = w,
+    Z = Z,
     )
+
   return(result)
 }

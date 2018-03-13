@@ -22,8 +22,7 @@ concavity <- function(object = object) {
 
   n <- length(log.exp)
 
-  temp <- intermediate.blocs(object, log.price = log.price, var.soc = var.soc,
-    log.exp = log.exp)
+  temp <- intermediate.blocs(object)
   my.array <- temp$my.array
   tot <- temp$tot
   tot2 <- temp$tot2

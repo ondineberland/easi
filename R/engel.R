@@ -33,8 +33,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
 
   n <- length(object$log.exp)
 
-  temp <- intermediate.blocs(object, log.price = object$log.price,
-                             var.soc = object$var.soc, log.exp = object$log.exp)
+  temp <- intermediate.blocs(object)
   my.array <- temp$my.array
   bjk <- temp$bjk
   P <- temp$P
@@ -45,7 +44,7 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
   hjt <- temp$hjt
   cc <- temp$cc
   noms <- temp$noms
-  lnx <- temp$log.exp
+  lnx <- object$log.exp
   y <- temp$y
 
   result <- list()
