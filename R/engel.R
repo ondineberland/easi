@@ -108,8 +108,10 @@ engel <- function(object = object, file = FALSE, sd = FALSE, lim.y = FALSE) {
       MAT <- cbind(MAT, y^i)
     }
 
-    for (i in 1:nsoc) {
-      MAT <- cbind(MAT, Z[, i + 1])
+    if (nsoc) {
+      for (i in 1:nsoc) {
+        MAT <- cbind(MAT, Z[, i + 1])
+      }
     }
 
     if (zy.inter) {
