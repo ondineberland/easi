@@ -32,7 +32,7 @@ equiv.income <- function(object = object, log.exp_ref = log.exp_ref,
 
   # Reference Situation
 
-  temp <- intermediate.blocs(object, log.price=log.price_ref
+  temp <- intermediate.blocs(object, log.price=log.price_ref,
                              log.exp=log.exp_ref)
   tot <- temp$tot
   tot2 <- temp$tot2

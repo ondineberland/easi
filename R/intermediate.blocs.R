@@ -35,7 +35,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
 
 
   # **** new sociodemographic matrix *****
-  Z = cbind(1, var.soc)
+  Z = cbind(rep(1, n), var.soc)
 
   # **** Budget shares matrix *******
   w = matrix(0, n, neq + 1)
@@ -62,8 +62,6 @@ intermediate.blocs <- function(object = object, log.price = NULL,
     my.array[1, neq + 1, i] <- my.array[1, i, neq + 1]
   }
   my.array[1, neq + 1, neq + 1] <- 0 - sum(my.array[1, 1:neq, neq + 1])
-
-
 
   # Step 2: Recovery of coefficients of p*z variables only if required
   if (pz.inter) {
@@ -183,6 +181,11 @@ intermediate.blocs <- function(object = object, log.price = NULL,
 
   colnames(gjt) <- c(noms, "others")
 
+  # Calculation of y 'EASI made EASIER' (PENDAKUR 2008 - page 11 formula 22)
+  y <- (log.exp - tot0 + 1/2 * tot)
+  if (interact) {
+    y <- y/(1 - 1/2 * tot2)
+  }
 
   # Recovery of coefficients of y*z variables (calculation of w_j) only if
   # required
@@ -203,7 +206,7 @@ intermediate.blocs <- function(object = object, log.price = NULL,
   # Recovery of the constants (calculation of w_j)
   cc = c()
   for (i in 1:neq) {
-    cc = cbind(cc, coef[paste("eq", i, "_(Intercept)", sep = "")])
+    cc = cbind(cc, coef[paste0("eq", i, "_(Intercept)")])
   }
 
   cc = cbind(cc, 1 - sum(cc))
@@ -223,7 +226,8 @@ intermediate.blocs <- function(object = object, log.price = NULL,
     tot0 = tot0,
     tot2 = tot2,
     w = w,
-    Z = Z,
+    y = y,
+    Z = Z
     )
 
   return(result)

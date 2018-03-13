@@ -416,28 +416,34 @@ elastic <- function(object, type = c("price", "income", "demographics"),
     # Calculation of sociodemographic elasticities of budget shares
     # page 13 formula 23 'EASI made EASIER' (Pendakur 2008)
     EZ <- matrix(0, nsoc, (neq + 1))
-    a <- my.array
-    for (i in 1:(neq + 1)) {
-      tempo4 <- tempoo <- 0
-      for (t in 1:nsoc) {
+    if (nsoc) {
+      a <- my.array
+      for (i in 1:(neq + 1)) {
+        tempo4 <- tempoo <- 0
+        for (t in 1:nsoc) {
+          if (interact) {
+            for (k in 1:(neq + 1)) {
+              if (t %in% interpz) {
+                tempoo <- a[t, k, i] * P[, k]
+                tempo4 <- tempo4 + tempoo
+              }
+            }
+          }
 
-        if (interact) {
-          for (k in 1:(neq + 1)) {
-          if (t %in% interpz) {
-            tempoo <- a[t, k, i] * P[, k]
-            tempo4 <- tempo4 + tempoo
+          if (nsoc) {
+            tot12 <- gjt[t, i] + hjt[t, i] * y
+          } else {
+            tot12 <- 0
           }
-          }
+
+          tot12 <- tot12 + tempo4
+          EZ[t, i] <- mean(tot12)
         }
-        tot12 <- gjt[t, i] + hjt[t, i] * y
-
-        tot12 <- tot12 + tempo4
-        EZ[t, i] <- mean(tot12)
       }
-    }
 
+      rownames(EZ) <- labels.soc
+    }
     colnames(EZ) <- c(labels.share[1:neq], "others")
-    rownames(EZ) <- labels.soc
     result$EZ <- EZ
 
     # Calculation of standard deviations of sociodemographic elasticities (delta
@@ -449,15 +455,15 @@ elastic <- function(object, type = c("price", "income", "demographics"),
         for (j in 1:nsoc) {
           tt <- c()
           tt <- c(tt, paste("eq", i, "_z", j, sep = ""))
+
           if (zy.inter) {
-          tt <- c(tt, paste("eq", i, "_yz", j, sep = ""))
+            tt <- c(tt, paste("eq", i, "_yz", j, sep = ""))
           }
-          if (pz.inter) {
-          if (j %in% interpz) {
+
+          if (pz.inter & j %in% interpz) {
             for (t in 1:neq) {
-            tt <- c(tt, paste("eq", i, "_np", t, "z", j, sep = ""))
+              tt <- c(tt, paste("eq", i, "_np", t, "z", j, sep = ""))
             }
-          }
           }
 
           tnum <- match(tt, ttt)
@@ -466,12 +472,10 @@ elastic <- function(object, type = c("price", "income", "demographics"),
 
           MAT <- Z[, 1]
 
-          if (zy.inter)
-          MAT <- cbind(MAT, y)
-          if (pz.inter) {
-          if (j %in% interpz) {
+          if (zy.inter) MAT <- cbind(MAT, y)
+
+          if (pz.inter & j %in% interpz) {
             MAT <- cbind(MAT, P[, (1:neq)])
-          }
           }
 
           # TODO apply the same optimization as in engel.R
