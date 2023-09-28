@@ -315,9 +315,19 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
 
   system <- list()
   for (i in 1:neq) {
-    system <- c(system, list(formula(paste(paste0("eqS", i), "<-",
-      paste0("s", i), "~", form6))))
+     # Construct the formula string
+    formula_str <- paste(paste0("eqS", i), "<-", paste0("s", i), "~", form6)
+    # Convert the string to a formula
+    formula_obj <- formula(formula_str)
+    # Add the formula to the system list
+    if (!is.null(formula_obj)) {
+      system <- c(system, list(formula_obj))
+    } else {
+      stop(paste("Failed to create formula from string:", formula_str))
+    }
   }
+
+ 
 
   # Creation of the list of instruments for the 3SLS estimation
   if (nsoc > 0) {
