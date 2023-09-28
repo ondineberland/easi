@@ -1,5 +1,3 @@
-# EXAMPLE
-
 easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
   py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = c()) {
@@ -17,7 +15,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   # Matrix of socio-demographic variables
   LABELS.Z <- c()
 
-  if (is.null(var.soc)) {
+  if (identical(var.soc, NULL)) {
     nsoc <- 0
     z <- NULL
   } else {
