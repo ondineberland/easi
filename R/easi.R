@@ -1,3 +1,5 @@
+# EXAMPLE
+
 easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
   py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = c()) {
