@@ -1,20 +1,20 @@
 easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
-  log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
-  py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = c()) {
-
+                 log.exp = log.exp, y.power = FALSE, labels.share = FALSE, labels.soc = FALSE,
+                 py.inter = FALSE, zy.inter = FALSE, pz.inter = FALSE, interpz = c()) {
+  
   # y.power = hightest power of y nsoc = mumber of demographics variables neq =
   # number of equations (without the last item)
   if (!y.power) {
     ny <- 3
   } else ny <- y.power
   neq <- ncol(shares) - 1
-
+  
   # Number of observations
   n <- length(log.exp)
-
+  
   # Matrix of socio-demographic variables
   LABELS.Z <- c()
-
+  
   if (identical(var.soc, NULL)) {
     nsoc <- 0
     z <- NULL
@@ -25,14 +25,14 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     for (i in 1:nsoc) LABELS.Z <- c(LABELS.Z, paste0("z", i))
     colnames(z) <- LABELS.Z
   }
-
+  
   # Labels or names of the budget shares: s1 - sneq
   LABELS.W <- c()
   for (i in 1:(neq + 1)) LABELS.W <- c(LABELS.W, paste0("s", i))
-
+  
   LABELS.P <- c()
   for (i in 1:(neq + 1)) LABELS.P <- c(LABELS.P, paste0("p", i))
-
+  
   # Matrix of budget shares, 's', and the matrix of log.prices, 'p'
   s <- matrix(0, n, neq + 1)
   p <- matrix(0, n, neq + 1)
@@ -42,28 +42,28 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   }
   colnames(s) <- LABELS.W
   colnames(p) <- LABELS.P
-
+  
   # labels.share
   if (length(labels.share) == 1) {
     labels.share <- LABELS.W
   }
-
+  
   # labels.price
   labels.price <- rep(0, neq + 1)
   for (i in 1:(neq + 1)) {
     labels.price[i] <- paste0("p", labels.share[i])
   }
-
+  
   # labels.soc
   if (length(labels.soc) == 1) {
     labels.soc <- LABELS.Z
   }
-
+  
   # interpz
   if (pz.inter) {
     interpz <- ifelse(length(interpz), interpz, c(1:nsoc))
   }
-
+  
   # Convergence criteria for iterated method. If model includes interactive
   # terms, we also define the the convergence variable (implicit utility or
   # parameter)
@@ -73,45 +73,45 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     conv_y <- 0
     conv_crit <- 1e-06
   } else conv_crit <- 1e-06
-
+  
   # Price normalisation: 'np[,i]-np[,neq]'
   np <- matrix(0, n, neq)
   for (i in 1:neq) np[, i] <- p[, i] - p[, neq + 1]
-
+  
   LABELS.np <- c()
   for (i in 1:neq) {
     LABELS.np <- c(LABELS.np, paste0("np", i))
   }
   colnames(np) <- LABELS.np
-
+  
   # Backup of price matrix 'np_backup' for future reference
   np_backup <- matrix(0, n, neq)
   for (i in 1:neq) np_backup[, i] <- np[, i]
   tempo <- c()
   for (i in 1:neq) tempo <- c(tempo, paste0("np", i, "_backup"))
   colnames(np_backup) <- tempo
-
+  
   # Initialization of matrix Ap to 0
   Ap <- matrix(0, 1, neq + 1)
   for (i in 1:(neq + 1)) Ap[i] <- 0
-
+  
   # Initialization of matrix Bp and vector pBp to 0
   if (interact) {
     Bp <- matrix(0, 1, neq + 1)
     for (i in 1:(neq + 1)) Bp[i] <- 0
     pBp <- 0
   }
-
+  
   # Initialization of matrix pAp to 0
   pAp <- 0
-
-
+  
+  
   # Creation of interaction variables 'np[,i]*z[,j]'
   # Not all variables need to be interacted. Those we wish to interact with
   # prices will be specified by interpz=c(). For example, writing
   # interpz=c(1,2) means that we wish to interact the first two demographic
   # variables with the prices.
-
+  
   if (pz.inter) {
     npz <- matrix(0, n, neq * length(interpz))
     for (i in 1:neq) {
@@ -120,7 +120,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
           z[, j]
       }
     }
-
+    
     # Creation of the names of the interaction variables 'np[,i]*z[,j]'
     tempo <- c()
     for (i in 1:neq) {
@@ -128,10 +128,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
         tempo <- c(tempo, paste0("np", i, "z", j))
       }
     }
-
+    
     LABELS.npz <- tempo
     colnames(npz) <- tempo
-
+    
     tempo <- c()
     for (j in interpz) {
       for (i in 1:neq) {
@@ -140,41 +140,41 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     }
     LABELS.npz2 <- tempo
   } else npz <- LABELS.npz <- LABELS.npz2 <- c()
-
-
+  
+  
   # Computation of y_stone=x-p'w, and of the instrument, y_tilda=x-p'w^bar
   y_stone <- log.exp
   y_tilda <- log.exp
-
+  
   mean_s <- matrix(0, n, neq + 1)
   for (i in 1:(neq + 1)) mean_s[, i] <- mean(s[, i])
-
+  
   for (i in 1:(neq + 1)) {
     y_tilda <- y_tilda - mean_s[, i] * p[, i]
     y_stone <- y_stone - s[, i] * p[, i]
   }
-
+  
   # Creation of y^i et y_inst^i
   y <- y_stone
   y_inst <- y_tilda
-
+  
   YY <- matrix(0, n, ny)
   Yinst <- matrix(0, n, ny)
   for (i in 1:ny) {
     YY[, i] <- y^i
     Yinst[, i] <- y_inst^i
   }
-
+  
   LABELS.YY <- c()
   LABELS.Yinst <- c()
   for (i in 1:ny) {
     LABELS.YY <- c(LABELS.YY, paste0("y", i))
     LABELS.Yinst <- c(LABELS.Yinst, paste0("y_inst", i))
   }
-
+  
   colnames(YY) <- LABELS.YY
   colnames(Yinst) <- LABELS.Yinst
-
+  
   # Creation of y*z and z*y_inst only if required.
   if (zy.inter) {
     yz <- matrix(0, n, nsoc)
@@ -183,38 +183,38 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       yz[, i] <- y * z[, i]
       yzinst[, i] <- y_inst * z[, i]
     }
-
+    
     tempo <- c()
     tempo2 <- c()
     for (i in 1:nsoc) {
       tempo <- c(tempo, paste0("yz", i))
       tempo2 <- c(tempo2, paste0("yzinst", i))
     }
-
+    
     colnames(yz) <- tempo
     colnames(yzinst) <- tempo2
   } else yz <- yzinst <- c()
-
+  
   # Creation of y*p and y_inst*p only if required
   if (py.inter) {
     ynp <- matrix(0, n, neq)
     for (i in 1:neq) ynp[, i] <- y * np[, i]
-
+    
     tempo <- c()
     for (i in 1:neq) tempo <- c(tempo, paste0("ynp", i))
-
+    
     LABELS.ynp <- tempo
     colnames(ynp) <- tempo
-
+    
     ynpinst <- matrix(0, n, neq)
     for (i in 1:neq) ynpinst[, i] <- y_inst * np[, i]
-
+    
     tempo <- c()
     for (i in 1:neq) tempo <- c(tempo, paste0("ynpinst", i))
-
+    
     colnames(ynpinst) <- tempo
   } else ynp <- ynpinst <- c()
-
+  
   # List of covariates for each equation (labels.share)
   form5 <- c("cste")
   for (i in 1:ny) form5 <- c(form5, colnames(YY)[i])
@@ -234,12 +234,12 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   if (pz.inter) {
     for (i in 1:(neq * length(interpz))) form10 <- c(form10, LABELS.npz2[i])
   }
-
+  
   varlist <- form10
-
+  
   # Number of variables per equation
   dim_varlist <- length(varlist)
-
+  
   # Constraints of symmetry on price coefficients
   TT <- matrix(0, 2, neq * (neq - 1)/2)
   k <- 0
@@ -252,7 +252,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   }
   TT <- t(TT)
   TT <- TT[, 1]
-
+  
   # Constraints of symmetry on y*p coefficients only if required
   if (py.inter) {
     TT2 <- matrix(0, 2, neq * (neq - 1)/2)
@@ -267,18 +267,18 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     TT2 <- t(TT2)
     TT2 <- TT2[, 1]
   } else TT2 <- c()
-
+  
   # Constraints of symmetry on p*z coefficients only if required
   if (pz.inter) {
     TT3 <- matrix(0, 2, neq * (length(interpz) * (neq - 1))/2)
     k <- 0
-
+    
     for (t in interpz) {
       for (i in 1:(neq - 1)) {
         for (j in ((i + 1):neq)) {
           k <- k + 1
           aa <- paste0("eq", i, "_np", j, "z", t, "-", "eq", j, "_np", i,
-          "z", t, "=0")
+                       "z", t, "=0")
           TT3[1, k] <- aa
         }
       }
@@ -286,10 +286,10 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     TT3 <- t(TT3)
     TT3 <- TT3[, 1]
   } else TT3 <- c()
-
+  
   # full list of constraints
   Rmat <- c(TT, TT2, TT3)
-
+  
   # Creation of system of equations
   form1 <- c()
   for (i in 1:ny) form1 <- paste(form1, "+", colnames(YY)[i])
@@ -306,37 +306,35 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     for (i in 1:neq) form5 <- paste(form5, "+", colnames(ynp)[i])
   }
   form6 <- form5
+  print(form6)
   if (pz.inter) {
     for (i in 1:(neq * length(interpz))) {
       form6 <- paste(form6, "+", LABELS.npz2[i])
     }
   }
-
-
+  
+  
   system <- list()
   for (i in 1:neq) {
-     # Construct the formula string
-    formula_str <- paste(paste0("eqS", i), "<-", paste0("s", i), "~", form6)
+    # Construct the formula string
+    formula_str <- paste0("s", i, " ~ ", form6)
+    
     # Convert the string to a formula
-    print(formula_str)
-    formula_obj <- base::formula(formula_str)
+    formula_obj <- as.formula(formula_str)
+    
     # Add the formula to the system list
-    if (!is.null(formula_obj)) {
-      system <- c(system, list(formula_obj))
-    } else {
-      stop(paste("Failed to create formula from string:", formula_str))
-    }
+    system[[i]] <- formula_obj
   }
-
- 
-
+  
+  
+  
   # Creation of the list of instruments for the 3SLS estimation
   if (nsoc > 0) {
     tempo <- c()
     for (i in 1:nsoc) tempo <- c(tempo, paste0("z", i))
     colnames(z) <- tempo
   }
-
+  
   form11 <- c()
   for (i in 1:nsoc) form11 <- paste(form11, "+", colnames(z)[i])
   form22 <- form11
@@ -357,15 +355,15 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   if (py.inter) {
     for (i in 1:neq) form66 <- paste(form66, "+", colnames(ynpinst)[i])
   }
-
+  
   zlist <- form66
   zlist <- paste("~", zlist)
-
-
+  
+  
   # Creation of the internal database to estimate the complete system
   new.data <- new.data_dep <- data.frame(cbind(s, YY, z, yz, np, ynp, npz,
-    Yinst, yzinst, ynpinst, np_backup))
-
+                                               Yinst, yzinst, ynpinst, np_backup))
+  
   # Initialization of vectors and criteria before creating the instruments
   y <- y_stone
   y_backup <- y_stone
@@ -374,34 +372,34 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   crit_test <- 1
   iter <- 0
   conv_y <- 1
-
+  
   # Creation of instruments (iterative linear 3sls)
   cat("\n", "*** Please wait during the creation of final instruments... *** ",
-    "\n")
+      "\n")
   while (crit_test > conv_crit) {
-
+    
     iter <- iter + 1
-    fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
-      data = new.data, restrict.matrix = Rmat)
-
+    fit3sls <- systemfit::systemfit(system, "3SLS", inst = as.formula(zlist),
+                                    data = new.data, restrict.matrix = Rmat)
+    
     if (interact) {
       if (iter > 1)
         params_old <- params
     }
-
+    
     params = fit3sls$coefficients
-
+    
     pAp <- 0
     pBp <- 0
     y_old <- y
-
-
+    
+    
     if (!interact) {
       # ********* Predicted Values ********
       pred <- predict(fit3sls, new.data)
       shat <- matrix(0, n, neq)
       for (i in 1:neq) shat[, i] <- pred[, i]
-
+      
       for (i in 1:neq) {
         new.data[, paste0("np", i)] <- 0
       }
@@ -410,37 +408,37 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       shat_p0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_p0[, i] <- pred[, i]
     }
-
-
+    
+    
     if (interact) {
       # ******** y^i = 1 *********
       for (j in 1:ny) new.data[, paste0("y", j)] <- 1
     }
-
+    
     if (py.inter) {
       # ********* y*p = p ********
       for (j in 1:neq) new.data[, paste0("ynp", j)] <- new.data[,
-        paste0("np", j)]
+                                                                paste0("np", j)]
     }
-
+    
     if (zy.inter) {
       # ********* y*z = z ********
       for (j in 1:nsoc) new.data[, paste0("yz", j)] <- new.data[,
-        paste0("z", j)]
+                                                                paste0("z", j)]
     }
-
+    
     # ********* Predicted Values with y=1 and interactions ********
     pred <- predict(fit3sls, new.data)
     shat_y1 <- matrix(0, n, neq)
     for (i in 1:neq) shat_y1[, i] <- pred[, i]
-
+    
     # ********* all p variables (p, p*z, p*y) are set to 0 ********
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- 0
       if (py.inter)
         new.data[, paste0("ynp", i)] <- 0
     }
-
+    
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
@@ -448,72 +446,72 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
         }
       }
     }
-
+    
     # ********* Predicted Values with y=1 and p variables are set to 0 and
     # interactions********
     pred <- predict(fit3sls, new.data)
     shat_y1_p0 <- matrix(0, n, neq)
     for (i in 1:neq) shat_y1_p0[, i] <- pred[, i]
-
+    
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- new.data[, paste0("np",
-       i, "_backup")]
+                                                       i, "_backup")]
     }
-
+    
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
-          i, "_backup")] * new.data[, paste0("z", j)]
+                                                                   i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
-
+    
     # ******** y variables and its interactions are set to 0 *********
     # y^i=y*p=y*z=0
     # ****
     if (interact) {
       for (i in 1:ny) new.data[, paste0("y", i)] <- 0
-
+      
       if (py.inter) {
         for (i in 1:neq) new.data[, paste0("ynp", i)] <- 0
       }
-
+      
       if (zy.inter) {
         for (i in 1:nsoc) new.data[, paste0("yz", i)] <- 0
       }
-
-
+      
+      
       # ******** Predicted Values with y=0 and its interactions ********
       pred <- predict(fit3sls, new.data)
       shat_y0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_y0[, i] <- pred[, i]
-
+      
       # *********** p variables are set to 0 *************
       for (i in 1:neq) {
         new.data[, paste0("np", i)] <- 0
         new.data[, paste0("ynp", i)] <- 0
       }
-
+      
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
-
+      
       # ******** Predicted Values with p=0 and its interactions ****
       pred <- predict(fit3sls, new.data)
       shat_y0_p0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_y0_p0[, i] <- pred[, i]
     }
-
+    
     # *********** p variables are restored : p=p_backup
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- new.data[, paste0("np",
-        i, "_backup")]
+                                                       i, "_backup")]
     }
-
+    
     # ********** Ap, pAp, Bp, pBp ******
     if (!interact) {
       shat_y0 <- shat
@@ -521,55 +519,55 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     }
     Ap <- matrix(0, n, neq)
     for (i in 1:neq) Ap[, i] <- shat_y0[, i] - shat_y0_p0[, i]
-
+    
     pAp <- 0
     # ********** pAp=pAp+p*Ap ******
     for (i in 1:neq) pAp <- pAp + new.data[, paste0("np", i)] * Ap[,
-      i]
-
+                                                                   i]
+    
     if (interact) {
       Bp <- matrix(0, n, neq)
       for (i in 1:neq) Bp[, i] <- shat_y1[, i] - shat_y1_p0[, i] - (shat_y0[,
-        i] - shat_y0_p0[, i])
-
+                                                                            i] - shat_y0_p0[, i])
+      
       pBp <- 0
       # ********** pBp=pBp+p*Bp ******
       for (i in 1:neq) pBp <- pBp + new.data[, paste0("np", i)] *
         Bp[, i]
     } else Bp <- pBp <- 0
-
-
+    
+    
     pAp <- round(1e+06 * pAp + 0.5)/1e+06
     pBp <- round(1e+06 * pBp + 0.5)/1e+06
-
+    
     # ********* Update of y *****
     y <- (y_stone + 0.5 * pAp)/(1 - 0.5 * pBp)
-
+    
     # ********* Update of y^i *****
     for (i in 1:ny) new.data[, paste0("y", i)] <- y^i
-
+    
     if (zy.inter) {
       # ********* Update of y*z *****
       for (i in 1:nsoc) new.data[, paste0("yz", i)] <- y * new.data[,
-        paste0("z", i)]
+                                                                    paste0("z", i)]
     }
-
+    
     if (py.inter) {
       # ********* y*p=y*p_backup ***********
       for (i in 1:neq) new.data[, paste0("ynp", i)] <- y * new.data[,
-        paste0("np", i, "_backup")]
+                                                                    paste0("np", i, "_backup")]
     }
-
+    
     if (pz.inter) {
       # ********* z*p=z*p_backup ***********
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
-          i, "_backup")] * new.data[, paste0("z", j)]
+                                                                   i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
-
+    
     if (interact) {
       # ********* Update of crit_test if conv_param=1 *******
       if ((iter > 1) & (conv_param == 1)) {
@@ -577,49 +575,49 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
         crit_test <- sum(params_change^2)
       }
     }
-
+    
     # ********* Update of y_change ********
     y_change <- abs(y - y_old)
-
+    
     # ********* Update of crit_test if conv_y=1 *******
     if (conv_y == 1)
       crit_test <- max(y_change)
-
+    
     # ********* Update of crit_test if conv_y=1 (no interactions) *******
     if (!interact)
       crit_test <- max(y_change)
-
+    
     # ********* After the first iteration, conv_param replace conv_y *******
     conv_y <- 0
-
+    
     # ********* Interface => convergence *******
     cat("iteration = ", iter, "\n")
     cat("crit_test = ", crit_test, "\n")
-
+    
     # ********* Creation of instruments yinst yinst*p and yinst*z *****
     y_inst <- (y_tilda + 0.5 * pAp)/(1 - 0.5 * pBp)
     Yinst <- matrix(0, n, ny)
     for (i in 1:ny) {
       Yinst[, i] <- y_inst^i
     }
-
+    
     if (py.inter) {
       # ********* ypinst = y_inst*p **********
       for (i in 1:neq) new.data[, paste0("ynpinst", i)] <- y_inst *
-        new.data[, paste0("np", i)]
+          new.data[, paste0("np", i)]
     }
-
+    
     if (zy.inter) {
       # ********* yzinst = y_inst*z **********
       for (i in 1:nsoc) new.data[, paste0("yzinst", i)] <- y_inst *
-        new.data[, paste0("z", i)]
+          new.data[, paste0("z", i)]
     }
-
+    
   }
-
+  
   # Final estimate with previous instruments
   new.data <- new.data_dep
-
+  
   # *** Initialization of vectors, parameters and criteria *****
   if (interact) {
     y_old <- y
@@ -627,71 +625,71 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   y_change <- 0
   iter <- 0
   crit_test <- 1
-
+  
   cat("\n", "*** Creation of final instruments successfully completed... ***",
-    "\n")
+      "\n")
   cat("\n", "*** Please wait during the estimation... ***", "\n")
   while (crit_test > conv_crit) {
     iter <- iter + 1
-    fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
-      data = new.data, restrict.matrix = Rmat)
-
+    fit3sls <- systemfit::systemfit(system, "3SLS", inst = as.formula(zlist),
+                                    data = new.data, restrict.matrix = Rmat)
+    
     if (interact) {
       if (iter > 1)
         params_old <- params
     }
-
+    
     params = fit3sls$coefficients
-
+    
     pAp <- 0
     pBp <- 0
     y_old <- y
-
+    
     if (!interact) {
       # ********* Predicted Values ********
       pred <- predict(fit3sls, new.data)
       shat <- matrix(0, n, neq)
       for (i in 1:neq) shat[, i] <- pred[, i]
-
+      
       for (i in 1:neq) {
         new.data[, paste0("np", i)] <- 0
       }
-
+      
       # ********* Predicted Values with p=0 and no interactions ********
       pred <- predict(fit3sls, new.data)
       shat_p0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_p0[, i] <- pred[, i]
     }
-
+    
     if (interact) {
       # ******** y^i = 1 *********
       for (j in 1:ny) new.data[, paste0("y", j)] <- 1
     }
-
+    
     if (py.inter) {
       # ********* y*p = p ********
       for (j in 1:neq) new.data[, paste0("ynp", j)] <- new.data[,
-        paste0("np", j)]
+                                                                paste0("np", j)]
     }
-
+    
     if (zy.inter) {
       # ********* y*z = z ********
       for (j in 1:nsoc) new.data[, paste0("yz", j)] <- new.data[,
-        paste0("z", j)]
+                                                                paste0("z", j)]
     }
-
+    
     # ********* Predicted Values with y=1 and interactions ********
     pred <- predict(fit3sls, new.data)
     shat_y1 <- matrix(0, n, neq)
     for (i in 1:neq) shat_y1[, i] <- pred[, i]
-
+    
     # ********* all p variables (p, p*z, p*y) are set to 0 ********
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- 0
       if (py.inter)
         new.data[, paste0("ynp", i)] <- 0
     }
-
+    
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
@@ -699,71 +697,71 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
         }
       }
     }
-
+    
     # ********* Predicted Values with y=1 and p variables are set to 0 and
     # interactions********
     pred <- predict(fit3sls, new.data)
     shat_y1_p0 <- matrix(0, n, neq)
     for (i in 1:neq) shat_y1_p0[, i] <- pred[, i]
-
+    
     # ******** p and p*z are restored ******** p=p_backup & p*z=p_backup*z *****
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- new.data[, paste0("np",
-        i, "_backup")]
+                                                       i, "_backup")]
     }
-
+    
     if (pz.inter) {
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
-          i, "_backup")] * new.data[, paste0("z", j)]
+                                                                   i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
-
+    
     # ******** y variables and its interactions are set to 0 *********
     # y^i=y*p=y*z=0
     # ****
     if (interact) {
       for (i in 1:ny) new.data[, paste0("y", i)] <- 0
-
+      
       if (py.inter) {
         for (i in 1:neq) new.data[, paste0("ynp", i)] <- 0
       }
-
+      
       if (zy.inter) {
         for (i in 1:nsoc) new.data[, paste0("yz", i)] <- 0
       }
-
+      
       # ******** Predicted Values with y=0 and its interactions ********
       pred <- predict(fit3sls, new.data)
       shat_y0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_y0[, i] <- pred[, i]
-
+      
       # *********** p variables are set to 0 *************
       for (i in 1:neq) {
         new.data[, paste0("np", i)] <- 0
         new.data[, paste0("ynp", i)] <- 0
       }
-
+      
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- 0
         }
       }
-
+      
       # ******** Predicted Values with p=0 and its interactions ****
       pred <- predict(fit3sls, new.data)
       shat_y0_p0 <- matrix(0, n, neq)
       for (i in 1:neq) shat_y0_p0[, i] <- pred[, i]
     }
-
+    
     # *********** p variables are restored : p=p_backup
     for (i in 1:neq) {
       new.data[, paste0("np", i)] <- new.data[, paste0("np",
-        i, "_backup")]
+                                                       i, "_backup")]
     }
-
+    
     # ********** Ap, pAp, Bp, pBp ******
     if (!interact) {
       shat_y0 <- shat
@@ -771,55 +769,55 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     }
     Ap <- matrix(0, n, neq)
     for (i in 1:neq) Ap[, i] <- shat_y0[, i] - shat_y0_p0[, i]
-
+    
     pAp <- 0
     # ********** pAp=pAp+p*Ap ******
     for (i in 1:neq) pAp <- pAp + new.data[, paste0("np", i)] * Ap[,
-      i]
-
+                                                                   i]
+    
     if (interact) {
       Bp <- matrix(0, n, neq)
       for (i in 1:neq) Bp[, i] <- shat_y1[, i] - shat_y1_p0[, i] - (shat_y0[,
-        i] - shat_y0_p0[, i])
-
+                                                                            i] - shat_y0_p0[, i])
+      
       pBp <- 0
       # ********** pBp=pBp+p*Bp ******
       for (i in 1:neq) pBp <- pBp + new.data[, paste0("np", i)] *
         Bp[, i]
     } else Bp <- pBp <- 0
-
-
+    
+    
     pAp <- round(1e+06 * pAp + 0.5)/1e+06
     pBp <- round(1e+06 * pBp + 0.5)/1e+06
-
+    
     # ********* Update of y *****
     y <- (y_stone + 0.5 * pAp)/(1 - 0.5 * pBp)
-
+    
     # ********* Update of y^i *****
     for (i in 1:ny) new.data[, paste0("y", i)] <- y^i
-
+    
     if (zy.inter) {
       # ********* Update of y*z *****
       for (i in 1:nsoc) new.data[, paste0("yz", i)] <- y * new.data[,
-        paste0("z", i)]
+                                                                    paste0("z", i)]
     }
-
+    
     if (py.inter) {
       # ********* y*p=y*p_backup ***********
       for (i in 1:neq) new.data[, paste0("ynp", i)] <- y * new.data[,
-        paste0("np", i, "_backup")]
+                                                                    paste0("np", i, "_backup")]
     }
-
+    
     if (pz.inter) {
       # ********* z*p=z*p_backup ***********
       for (i in 1:neq) {
         for (j in interpz) {
           new.data[, paste0("np", i, "z", j)] <- new.data[, paste0("np",
-          i, "_backup")] * new.data[, paste0("z", j)]
+                                                                   i, "_backup")] * new.data[, paste0("z", j)]
         }
       }
     }
-
+    
     if (interact) {
       # ********* Update of crit_test if conv_param=1 *******
       if ((iter > 1) & (conv_param == 1)) {
@@ -827,38 +825,38 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
         crit_test <- sum(params_change^2)
       }
     }
-
+    
     # ********* Update of y_change ********
     y_change <- abs(y - y_old)
-
+    
     # ********* Update of crit_test if conv_y=1 *******
     if (conv_y == 1)
       crit_test <- max(y_change)
-
+    
     # ********* Update of crit_test if conv_y=1 (no interactions) *******
     if (!interact)
       crit_test <- max(y_change)
-
+    
     # ********* After the first iteration, conv_param replace conv_y *******
     conv_y <- 0
-
+    
     # ********* Interface => convergence *******
     cat("iteration = ", iter, "\n")
     cat("crit_test = ", crit_test, "\n")
-
+    
   }
   cat("\n", "*** Estimation successfully completed ***", "\n")
   # ********* final estimate ****************
-  fit3sls <- systemfit::systemfit(system, "3SLS", inst = formula(zlist),
-    data = new.data, restrict.matrix = Rmat)
-
+  fit3sls <- systemfit::systemfit(system, "3SLS", inst = as.formula(zlist),
+                                  data = new.data, restrict.matrix = Rmat)
+  
   # Calculation of w_j
   W = matrix(0, n, neq)
   for (i in 1:neq) W[, i] <- predict(fit3sls)[, i]
-
+  
   colnames(W) <- labels.share[1:neq]
-
-
+  
+  
   # Preparation of the display of results
   VARS = c("Constante")
   for (i in 1:ny) VARS <- c(VARS, paste0("y^", i))
@@ -876,16 +874,16 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
       }
     }
   }
-
+  
   VARS2 <- c("~")
   for (i in 1:length(VARS)) VARS2 <- paste(VARS2, "+", VARS[i])
-
+  
   if (nsoc > 0) {
     tempo <- c()
     for (i in 1:nsoc) tempo <- c(tempo, paste0("z", i))
     colnames(z) <- tempo
   }
-
+  
   form11 <- c()
   for (i in 1:nsoc) form11 <- c(form11, labels.soc[i])
   form22 <- form11
@@ -910,12 +908,12 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   if (py.inter) {
     for (i in 1:neq) form66 <- c(form66, paste0("y*", labels.price[i]))
   }
-
+  
   VARINST <- form66
-
+  
   VARINST2 <- c("~")
   for (i in 1:length(VARINST)) VARINST2 <- paste(VARINST2, "+", VARINST[i])
-
+  
   a = summary(fit3sls)
   for (i in 1:neq) {
     a$eq[[i]][1] <- labels.share[i]
@@ -923,12 +921,12 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
     a$eq[[i]][3] <- VARS2
     a$eq[[i]][4] <- VARINST2
   }
-
+  
   Residuals = summary(fit3sls)$residuals
   colnames(Residuals) <- labels.share[1:neq]
-
-
-
+  
+  
+  
   # The EASI function returns 'Result', an object of class 'easi', namely a list
   # of results that includes:
   # - Residuals
@@ -950,7 +948,7 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   # labels.price (the names of prices), labels.soc (the names of demographic
   # variables), labels (the names of budget shares), dim_varlist (nombre de
   # variables)
-
+  
   result <- list(
     Residuals = Residuals,
     CoefCov = summary(fit3sls)$coefCov,
