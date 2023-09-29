@@ -318,7 +318,8 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
      # Construct the formula string
     formula_str <- paste(paste0("eqS", i), "<-", paste0("s", i), "~", form6)
     # Convert the string to a formula
-    formula_obj <- formula(formula_str)
+    print(formula_str)
+    formula_obj <- base::formula(formula_str)
     # Add the formula to the system list
     if (!is.null(formula_obj)) {
       system <- c(system, list(formula_obj))
