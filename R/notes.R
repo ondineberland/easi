@@ -20,27 +20,26 @@ elasticities_result <- elastic(est, type = c("price", "income", "demographics"))
 selected_names <- c("EP", "EP_SE", "EPS", "EPQ", "ELASTPRICE", "ELASTINCOME")
   for(name in selected_names) {
   
-   latex_code <- xtable(elasticities_result[[name]])
-   file_name <- paste0("table_", name, ".tex")
-   print(latex_code, type = "latex", file = file_name)
-  }
 
-  # one matrix per separate object
-  for(name in selected_names) {
-    assign(name, elasticities_result[[name]])
-  }
+selected_names <- c("EP", "EP_SE")
+for(name in selected_names) {
+  latex_code <- xtable(elasticities_result[[name]])
+  file_name <- paste0("table_", name, ".tex")
+  print(latex_code, type = "latex", file = file_name)
+}
 
+# one matrix per separate object
+for(name in selected_names) {
+  assign(name, elasticities_result[[name]])
+}
 
-### NEXT TEST
-
-
-
- # A function that adds stars to the coefficients
+# A function that adds stars to the coefficients
 add_stars <- function(coef, se) {
   z <- abs(coef/se)
   
   # Calculate p-value for two-tailed z-test
   p_value <- 2 * (1 - pnorm(z))
+  
   
   # Add stars based on p-value
   if (p_value < 0.01) {
@@ -54,6 +53,17 @@ add_stars <- function(coef, se) {
   }
 }
 
+format_two_digits <- function(number) {
+  return(sprintf("%.2f", number))
+}
+
+for (i in 1:nrow(EP)) {
+  for (j in 1:ncol(EP)) {
+    EP[i, j] <- format_two_digits(as.numeric(EP[i, j]))
+    EP_SE[i, j] <- format_two_digits(as.numeric(EP_SE[i, j]))
+  }
+}
+
 EP_starred <- EP
 for (i in 2:nrow(EP)) {
   for (j in 2:ncol(EP)) {
@@ -61,5 +71,20 @@ for (i in 2:nrow(EP)) {
   }
 }
 
-### THEN I HAVE A PROBLEM BECAUSE EP_starred is a 9x9 matrix but appears weird -> find someone to help me 
-merged_matrix <- data.frame()
+fusionner_dataframes <- function(df1, df2) {
+  rows <- nrow(df1)
+  result <- data.frame(matrix(nrow = rows * 2, ncol = ncol(df1), 
+                              dimnames = list(NULL, colnames(df1))))
+  for (i in 1:rows) {
+    result[i * 2 - 1, ] <- df1[i, ]
+    result[i * 2, ] <- paste0("(", sprintf("%.2f", as.numeric(df2[i, ])), ")")
+  }
+  return(result)
+}
+
+# Utilisez la fonction pour fusionner les dataframes
+EP_concat <- fusionner_dataframes(EP_starred, EP_SE)
+latex_code <- xtable(EP_concat)
+# Affichez le dataframe résultant
+print(EP_concat)
+

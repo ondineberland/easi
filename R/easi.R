@@ -30,6 +30,11 @@ easi <- function(shares = shares, log.price = log.price, var.soc = NULL,
   LABELS.W <- c()
   for (i in 1:(neq + 1)) LABELS.W <- c(LABELS.W, paste0("s", i))
   
+  # If no custom labels are provided, use LABELS.W
+  if (is.logical(labels.share) && !labels.share) {
+    labels.share <- LABELS.W
+  }
+  
   LABELS.P <- c()
   for (i in 1:(neq + 1)) LABELS.P <- c(LABELS.P, paste0("p", i))
   
